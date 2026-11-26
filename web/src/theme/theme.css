@@ -1,0 +1,29 @@
+/* Jetons de TerangaCycle AI : seul fichier où une couleur est écrite (Tailwind 4, sans
+   fichier de configuration JavaScript). Les classes utilitaires en découlent :
+   bg-surface, text-ink, border-line, etc. */
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-900: #0B3D2E;
+  --color-brand-600: #187A50;
+  --color-accent: #F2B705;
+  --color-mint: #EAF3EC;
+  --color-ink: #14231C;
+  --color-muted: #5E7168;
+  --color-line: #D5E3D9;
+  --color-surface: #F6FAF7;
+  --color-warning-ink: #7A5C00;
+  --color-warning-bg: #FFF4CC;
+  --color-danger: #D9482B;
+
+  /* Types de déchet : jetons provisoires (story 1.13), définitifs avec la story 8.1.
+     Éléments non textuels (pictogrammes) : 3:1 face au fond, vérifié par contrast.test. */
+  --color-waste-plastic: #1D6FB8;
+  --color-waste-metal: #B5391F;
+  --color-waste-glass: #0F7C6B;
+  --color-waste-organic: #5B7A1E;
+  --color-waste-mixed: #6D4C9F;
+}

@@ -1,0 +1,164 @@
+{
+  "app": {
+    "name": "TerangaCycle AI"
+  },
+  "home": {
+    "tagline": "Ensemble, gardons Dakar propre",
+    "report": "Signaler un dépôt",
+    "reportHint": "Photo et position en moins de 30 secondes"
+  },
+  "consent": {
+    "title": "Avant votre premier signalement",
+    "intro": "Merci de nous aider à garder Dakar propre. Voici ce que l'application fera de votre position et de vos photos.",
+    "location": {
+      "title": "Votre position",
+      "body": "Au moment de la photo, l'application demandera la position de votre téléphone. Elle sert à situer le dépôt pour les équipes de collecte."
+    },
+    "photo": {
+      "title": "Votre photo",
+      "body": "La photo du dépôt est envoyée à TerangaCycle avec sa position. Elle est allégée et nettoyée de ses informations cachées avant l'envoi."
+    },
+    "people": {
+      "title": "Ni personne ni plaque",
+      "body": "Photographiez seulement le dépôt : aucun visage, aucune personne, aucune plaque d'immatriculation."
+    },
+    "device": {
+      "title": "Votre appareil",
+      "body": "Un identifiant anonyme, créé sur ce téléphone, relie vos signalements à cet appareil. Il ne contient ni votre nom ni votre numéro."
+    },
+    "training": {
+      "label": "Mes photos et corrections peuvent servir à améliorer le Modèle",
+      "hint": "Facultatif : vous pouvez signaler sans cocher cette case."
+    },
+    "reinstall": "Sans compte, la liste de vos signalements reste sur ce téléphone. Elle sera perdue si vous réinstallez l'application, si vous effacez ses données, ou si le navigateur les efface.",
+    "accept": "J'accepte",
+    "decline": "Pas maintenant",
+    "saveError": "Votre choix n'a pas pu être enregistré sur ce téléphone. Réessayez."
+  },
+  "capture": {
+    "title": "Photographier le dépôt",
+    "position": {
+      "locating": "Recherche de votre position…",
+      "detected": "Position détectée, précision ± {{accuracy}} m",
+      "wait": "Votre position est encore imprécise. Patientez quelques secondes, si possible à découvert : elle s'affine toute seule.",
+      "continue": "Continuer quand même",
+      "denied": "Pour situer le dépôt, TerangaCycle a besoin de la position de votre téléphone. Autorisez la localisation pour ce site dans les réglages du navigateur, puis réessayez.",
+      "unavailable": "Votre position n'a pas pu être trouvée pour le moment. Vérifiez que la localisation du téléphone est activée, puis réessayez."
+    },
+    "zone": {
+      "checking": "Vérification de la zone couverte…",
+      "outside": "TerangaCycle n'est pas encore actif ici. Merci de votre aide : vous pourrez signaler un dépôt dès que vous serez dans la zone couverte.",
+      "firstConnection": "Une connexion est nécessaire une première fois pour connaître la zone couverte. Connectez-vous à internet, puis réessayez."
+    },
+    "announce": {
+      "waiting": "Vérification de votre position en cours.",
+      "positionError": "Position indisponible : photo impossible pour le moment.",
+      "configUnavailable": "Zone couverte inconnue : une connexion est requise.",
+      "outsideZone": "Hors de la zone couverte : photo impossible à cet endroit.",
+      "imprecise": "Position imprécise : patientez, ou continuez sans attendre.",
+      "ready": "Position vérifiée : vous pouvez prendre la photo."
+    },
+    "retry": "Réessayer",
+    "trigger": "Prendre la photo",
+    "back": "Retour à l'accueil",
+    "rule": {
+      "title": "Ni personne ni plaque",
+      "body": "Photographiez seulement le dépôt : aucun visage, aucune personne, aucune plaque d'immatriculation."
+    },
+    "photo": {
+      "processing": "Préparation de la photo…",
+      "unreadable": "Cette photo n'a pas pu être lue. Reprenez-la."
+    },
+    "preview": {
+      "title": "Votre photo",
+      "alt": "Photo du dépôt que vous allez signaler",
+      "continue": "Continuer",
+      "retake": "Reprendre la photo"
+    }
+  },
+  "notFound": {
+    "title": "Cette page est introuvable",
+    "back": "Retour à l'accueil"
+  },
+  "errors": {
+    "not_found": "Nous ne trouvons pas ce que vous cherchez. Vérifiez le lien ou revenez à l'accueil.",
+    "method_not_allowed": "Cette action n'est pas possible ici. Revenez à l'accueil puis réessayez.",
+    "validation_error": "Certaines informations ne sont pas valides. Vérifiez-les puis réessayez.",
+    "internal_error": "Un problème est survenu de notre côté. Réessayez dans quelques instants.",
+    "photo_too_large": "Cette photo est trop lourde. Reprenez-la depuis l'application, qui l'allège avant l'envoi.",
+    "unsupported_media_type": "Ce fichier n'est pas une photo acceptée. Reprenez la photo avec l'appareil photo de l'application.",
+    "photo_too_many_pixels": "Cette photo est trop grande. Reprenez-la depuis l'application, qui la réduit avant l'envoi.",
+    "photo_unreadable": "Cette photo n'a pas pu être lue. Reprenez-la.",
+    "invalid_device_id": "Cet appareil n'a pas pu être reconnu. Fermez puis rouvrez l'application, puis réessayez.",
+    "invalid_token": "Votre session n'est plus valable. Reconnectez-vous, puis réessayez.",
+    "consent_required": "Pour envoyer un signalement, acceptez d'abord les conditions d'utilisation de votre position et de votre photo.",
+    "outside_active_zone": "TerangaCycle n'est pas encore actif ici.",
+    "voice_too_large": "Votre message vocal est trop long. Réenregistrez-le en moins de 30 secondes.",
+    "unsupported_voice_type": "Ce message vocal n'a pas pu être lu. Réenregistrez-le.",
+    "invalid_phone": "Saisissez un numéro sénégalais à 9 chiffres, par exemple 77 123 45 67.",
+    "invalid_code": "Ce code n'est pas valable. Vérifiez-le, ou demandez un nouveau code.",
+    "sms_unavailable": "L'envoi de codes par SMS n'est pas encore ouvert. Réessayez plus tard.",
+    "session_revoked": "Votre session a pris fin. Reconnectez-vous.",
+    "forbidden": "Cet espace est réservé à un autre rôle. Revenez à l'accueil.",
+    "invalid_transition": "Ce signalement a déjà été traité. Actualisez la liste.",
+    "retained_type_required": "Choisissez le type de déchet avant de valider.",
+    "rejection_reason_required": "Choisissez un motif avant de rejeter."
+  },
+  "details": {
+    "title": "Décrire le dépôt",
+    "optional": "(facultatif)",
+    "pileSize": {
+      "label": "Taille du tas",
+      "small": "Petit",
+      "medium": "Moyen",
+      "large": "Grand"
+    },
+    "wasteType": {
+      "label": "Type de déchet"
+    },
+    "describe": {
+      "label": "Description",
+      "placeholder": "Écrivez ici…",
+      "hint": "Écrivez, ou touchez le micro pour parler en wolof ou en français. Ne dites ni nom ni numéro de téléphone.",
+      "record": "Parler pour décrire le dépôt",
+      "stop": "Arrêter l'enregistrement",
+      "recording": "Enregistrement… {{elapsed}} / {{max}}",
+      "listen": "Écouter votre message vocal",
+      "deleteVoice": "Effacer le message vocal",
+      "micDenied": "Le micro n'est pas autorisé. Autorisez-le pour ce site dans les réglages du navigateur, ou écrivez votre description."
+    },
+    "missingPileSize": "Choisissez la taille du tas pour pouvoir envoyer.",
+    "send": "Envoyer le signalement",
+    "sending": "Envoi en cours…",
+    "retry": "Réessayer",
+    "errors": {
+      "network": "Envoi impossible pour l'instant. Votre saisie est gardée, réessayez.",
+      "photo": "La photo n'a pas pu être acceptée. Reprenez-la, puis renvoyez le signalement.",
+      "backToCapture": "Revenir à la photo"
+    }
+  },
+  "waste": {
+    "plastic": "Plastique",
+    "metal": "Métal",
+    "glass": "Verre",
+    "organic": "Organique",
+    "mixed": "Mixte"
+  },
+  "confirmation": {
+    "title": "Merci ! Votre signalement est bien arrivé.",
+    "trackingLabel": "Votre numéro de suivi",
+    "timeline": "Suivi de votre signalement",
+    "current": "Étape actuelle",
+    "steps": {
+      "reported": "Signalé",
+      "validated": "Validé par la modération",
+      "assigned": "Assigné à un collecteur",
+      "collected": "Collecté, preuve photo"
+    },
+    "home": "Retour à l'accueil"
+  },
+  "demo": {
+    "label": "Données de démonstration",
+    "banner": "Mode démonstration : les données affichées ne sont pas réelles."
+  }
+}

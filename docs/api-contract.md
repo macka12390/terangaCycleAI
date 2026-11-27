@@ -51,6 +51,8 @@ Erreur (toujours ce format, message en français lisible par l'utilisateur) :
 | 409 | `PHONE_TAKEN` | Un compte existe déjà avec ce numéro |
 | 409 | `LAST_SUPERADMIN` | Dernier super admin réel actif : ni rétrogradé ni suspendu |
 | 409 | `NAME_TAKEN` | Une organisation porte déjà ce nom |
+| 409 | `INSUFFICIENT_STOCK` | Lot plus lourd que le stock vérifié (`details.available_kg`) |
+| 409 | `LOT_ALREADY_RESERVED` | Lot déjà réservé par un autre recycleur |
 | 404 | `NOT_FOUND` | Ressource ou route inconnue |
 | 409 | `INVALID_TRANSITION` | Le statut actuel ne permet pas l'opération |
 | 409 | `MISSION_ALREADY_TAKEN` | Mission déjà acceptée par un autre collecteur |
@@ -119,7 +121,7 @@ Proof:                                      pending ─► verified | rejected |
 
 Compte réel : `"is_demo": false`, `"demo_login": null`, `"phone": "+221771234567"`.
 
-`role` : `citizen`, `collector`, `admin` ou `superadmin` (le super admin a tous les droits de l'admin, plus la gestion des admins et le journal d'audit).
+`role` : `citizen`, `collector`, `recycler` (étape 5, sans organisation), `admin` ou `superadmin` (le super admin a tous les droits de l'admin, plus la gestion des admins et le journal d'audit).
 
 `organisation` : `{ id, name, is_demo }` ou `null` (citoyen, super admin).
 
@@ -256,7 +258,7 @@ Légende accès : 🌐 public · 👤 citoyen (jeton facultatif) · 🛡️ admi
 | GET | `/api/auth/me` | jeton | — | `{ success, user }` |
 | PATCH | `/api/auth/me` | jeton (compte réel) | `{ "name"?, "sms_notifications"? }` | `{ success, user }` (403 `DEMO_ACCOUNT_LOCKED` pour un compte de démo) |
 
-Comptes : `citoyen-demo`, `admin-demo` (organisation principale), `admin-pikine-demo` (UCG Pikine-Guédiawaye), `superadmin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
+Comptes : `citoyen-demo`, `recycleur-demo`, `admin-demo` (organisation principale), `admin-pikine-demo` (UCG Pikine-Guédiawaye), `superadmin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
 `demo-accounts` renvoie aussi `demo_enabled` ; s'il vaut `false`, n'afficher que la connexion par SMS.
 
 ### Connexion par code SMS (OTP)
@@ -496,6 +498,38 @@ Envoyées par le même fournisseur que les codes de connexion (`SMS_PROVIDER` ; 
 | GET | `/api/notifications` | 🛡️ (son organisation) · super admin (tout) | `{ success, provider, notifications: [{ kind, kind_label, recipient, recipient_role, phone, message, status, detail, attempts, tracking_number, created_at, sent_at }] }` |
 
 `phone` est toujours masqué (`+221 77 *** ** 01`). `status` : `pending`, `sent`, `failed`, `skipped`. Filtre : `?status=`.
+
+### Marketplace : lots de matière (étape 5)
+
+Un collecteur vérifié vend sa matière **vérifiée** à des recycleurs. Stock d'une matière = kilos de ses preuves `verified` (catégorie finale du dépôt) − ses lots non retirés. Un lot plus lourd que le stock → 409 `INSUFFICIENT_STOCK`.
+
+Cycle : `available` → `reserved` (un recycleur, atomique) → `handed_over` (remis par le collecteur). `reserved` → `available` si la réservation est annulée ; `available` → `cancelled` si le collecteur retire le lot (son poids revient au stock).
+
+| Méthode | Route | Accès | Corps | Réponse |
+|---|---|---|---|---|
+| GET | `/api/lots` | recycleur · 🚛 · 🛡️ | — | `{ success, lots: [lot] }` |
+| GET | `/api/lots/stock` | 🚛 | — | `{ success, stock: { plastic: 23.5, metal: 0, … } }` |
+| POST | `/api/lots` | 🚛 vérifié | `{ category, weight_kg, price_per_kg?, description? }` | 201 `{ success, lot }` |
+| POST | `/api/lots/<id>/reserve` | recycleur | — | `{ success, lot }` |
+| POST | `/api/lots/<id>/release` | recycleur qui a réservé · collecteur du lot | — | `{ success, lot }` |
+| POST | `/api/lots/<id>/handover` | collecteur du lot | — | `{ success, lot }` |
+| POST | `/api/lots/<id>/cancel` | collecteur du lot (lot disponible) | — | `{ success, lot }` |
+
+- `GET /api/lots` : recycleur → `?scope=available` (défaut, tous les lots disponibles) ou `?scope=mine` (ses réservations) ; collecteur → ses lots ; admin → lots de son organisation ; super admin → tous. Filtres `status`, `category`.
+- `price_per_kg` : prix indicatif en francs CFA (entier, facultatif) ; `total_price` = prix × kilos.
+
+```json
+{ "id": 3, "category": "plastic", "category_label": "Plastique", "weight_kg": 20, "price_per_kg": 150,
+  "total_price": 3000, "description": "Bouteilles PET triées", "status": "reserved", "status_label": "Réservé",
+  "collector": { "id": 8, "name": "Moussa", "phone": "+221781110002" },
+  "recycler": { "id": 9, "name": "Recyclage Dakar" },
+  "organisation": { "id": 1, "name": "Organisation principale (Dakar)", "is_demo": false },
+  "reserved_at": "…", "handed_over_at": null, "created_at": "…", "contact_visible": true }
+```
+
+- **Contact** : `collector.phone` n'apparaît que pour le recycleur qui a réservé, le collecteur et les admins (`contact_visible`) ; `recycler.phone` seulement pour le collecteur et ce recycleur.
+- SMS au collecteur quand son lot est réservé, et à l'autre partie quand une réservation est annulée.
+- Statistiques : `stats.marketplace` = `{ counts, available_kg, reserved_kg, handed_over_kg, handed_over_by_category }` (`handed_over_kg` : matière effectivement remise aux recycleurs).
 
 ### Photos
 

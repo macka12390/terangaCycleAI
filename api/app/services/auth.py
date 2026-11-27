@@ -41,6 +41,12 @@ DEMO_ACCOUNTS = (
         "is_verified": True,
     },
     {
+        "demo_login": "recycleur-demo",
+        "name": "Recycleur Démo",
+        "role": "recycler",
+        "is_verified": True,
+    },
+    {
         "demo_login": "collecteur-demo",
         "name": "Collecteur Démo (vérifié)",
         "role": "collector",

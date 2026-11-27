@@ -4,6 +4,7 @@ from app.routes.accounts import bp as accounts_bp
 from app.routes.ai import bp as ai_bp
 from app.routes.auth import bp as auth_bp
 from app.routes.dashboard import bp as dashboard_bp
+from app.routes.lots import bp as lots_bp
 from app.routes.missions import bp as missions_bp
 from app.routes.notifications import bp as notifications_bp
 from app.routes.organisations import bp as organisations_bp
@@ -23,6 +24,7 @@ BLUEPRINTS = (
     accounts_bp,
     organisations_bp,
     notifications_bp,
+    lots_bp,
     uploads_bp,
 )
 

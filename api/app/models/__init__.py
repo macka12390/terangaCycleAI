@@ -2,6 +2,7 @@
 
 from app.models.audit import AuditLog
 from app.models.event import StatusEvent
+from app.models.lot import Lot
 from app.models.mission import Mission
 from app.models.notification import Notification
 from app.models.organisation import Organisation
@@ -13,6 +14,7 @@ from app.models.user import User
 __all__ = [
     "AuditLog",
     "CollectionProof",
+    "Lot",
     "Mission",
     "Notification",
     "Organisation",

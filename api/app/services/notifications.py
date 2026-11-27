@@ -32,6 +32,8 @@ KIND_LABELS = {
     "proof.verified": "Preuve vérifiée",
     "proof.rejected": "Preuve refusée",
     "proof.disputed": "Preuve contestée",
+    "lot.reserved": "Lot réservé",
+    "lot.released": "Réservation annulée",
 }
 
 
@@ -216,3 +218,26 @@ def list_notifications(user: User, args: Mapping) -> list[Notification]:
         query = query.filter(Notification.status == status)
     limit, offset = parse_pagination(args)
     return query.order_by(Notification.id.desc()).limit(limit).offset(offset).all()
+
+
+# --- Marketplace (étape 5) ------------------------------------------------------------------
+
+
+def _lot_label(lot) -> str:
+    return f"{_kg(lot.weight_kg)} kg de {CATEGORIES[lot.category].lower()}"
+
+
+def lot_reserved(lot, recycler: User) -> None:
+    notify(
+        lot.collector, "lot.reserved",
+        f"{recycler.name} a réservé votre lot ({_lot_label(lot)}). "
+        "Ses coordonnées sont dans l'application, rubrique Mes lots.",
+    )
+
+
+def lot_released(lot, recipient: User | None, by_collector: bool) -> None:
+    who = "le collecteur" if by_collector else "le recycleur"
+    notify(
+        recipient, "lot.released",
+        f"la réservation du lot ({_lot_label(lot)}) a été annulée par {who}.",
+    )

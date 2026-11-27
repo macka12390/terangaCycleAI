@@ -3,6 +3,7 @@
 import json
 
 from app.ai.service import suggested_category
+from app.constants import CATEGORIES as CATEGORIES_LABELS
 from app.constants import (
     AI_MODE_LABELS,
     MISSION_STATUS_LABELS,
@@ -247,4 +248,36 @@ def notification_to_dict(notification) -> dict:
         "tracking_number": notification.report.tracking_number if notification.report else None,
         "created_at": iso(notification.created_at),
         "sent_at": iso(notification.sent_at),
+    }
+
+
+def lot_to_dict(lot, viewer) -> dict:
+    from app.constants import LOT_STATUS_LABELS
+    from app.services.lots import can_see_contact
+
+    contact = can_see_contact(viewer, lot)
+    collector = user_summary(lot.collector)
+    if contact and lot.collector is not None:
+        collector["phone"] = lot.collector.phone
+    recycler = user_summary(lot.recycler)
+    if recycler is not None and lot.recycler is not None and viewer.id in (lot.collector_id, lot.recycler_id):
+        recycler["phone"] = lot.recycler.phone
+    return {
+        "id": lot.id,
+        "category": lot.category,
+        "category_label": CATEGORIES_LABELS.get(lot.category, lot.category),
+        "weight_kg": lot.weight_kg,
+        "price_per_kg": lot.price_per_kg,
+        "total_price": round(lot.price_per_kg * lot.weight_kg) if lot.price_per_kg is not None else None,
+        "description": lot.description,
+        "status": lot.status,
+        "status_label": LOT_STATUS_LABELS[lot.status],
+        "collector": collector,
+        "recycler": recycler,
+        "organisation": organisation_summary(lot.organisation),
+        "reserved_at": iso(lot.reserved_at),
+        "handed_over_at": iso(lot.handed_over_at),
+        "created_at": iso(lot.created_at),
+        # Seulement pour le recycleur qui a réservé, le collecteur et les admins.
+        "contact_visible": contact,
     }

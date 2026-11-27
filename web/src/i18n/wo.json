@@ -288,7 +288,9 @@
     "DEMO_ACCOUNT_LOCKED": "Les comptes de démonstration ne sont pas modifiables.",
     "PHONE_TAKEN": "Un compte existe déjà avec ce numéro.",
     "LAST_SUPERADMIN": "C'est le dernier super administrateur actif : nommez-en un autre d'abord.",
-    "NAME_TAKEN": "Une organisation porte déjà ce nom."
+    "NAME_TAKEN": "Une organisation porte déjà ce nom.",
+    "INSUFFICIENT_STOCK": "Stock vérifié insuffisant pour ce lot.",
+    "LOT_ALREADY_RESERVED": "Ce lot vient d'être réservé par un autre recycleur."
   },
   "statuses": {
     "report": {
@@ -331,6 +333,10 @@
       "superadmin": {
         "title": "Super administrateur",
         "body": "Gérer les comptes, les rôles et le journal d'audit"
+      },
+      "recycler": {
+        "title": "Recycleur",
+        "body": "Acheter de la matière triée et vérifiée"
       }
     },
     "verified": "Compte vérifié",
@@ -348,7 +354,8 @@
       "map": "Carte",
       "accounts": "Comptes",
       "organisations": "Organisations",
-      "notifications": "SMS"
+      "notifications": "SMS",
+      "lots": "Lots"
     },
     "logout": "Quitter",
     "dashboard": {
@@ -378,7 +385,8 @@
         "proof": "Preuve"
       },
       "organisation": "Organisation",
-      "allOrganisations": "Toutes les organisations"
+      "allOrganisations": "Toutes les organisations",
+      "handedOverKg": "Remis aux recycleurs"
     },
     "reports": {
       "title": "Modération des signalements",
@@ -452,7 +460,8 @@
         "citizen": "Citoyen",
         "collector": "Collecteur",
         "admin": "Administrateur",
-        "superadmin": "Super administrateur"
+        "superadmin": "Super administrateur",
+        "recycler": "Recycleur"
       },
       "create": {
         "toggle": "Nouveau compte",
@@ -644,12 +653,75 @@
         "citizen": "Recevez un SMS quand votre signalement est validé, puis quand le dépôt est collecté.",
         "collector": "Recevez un SMS pour chaque nouvelle mission de votre organisation et quand vos preuves sont vérifiées.",
         "admin": "Les administrateurs ne reçoivent pas de SMS de suivi pour l'instant.",
-        "superadmin": "Les super administrateurs ne reçoivent pas de SMS de suivi pour l'instant."
+        "superadmin": "Les super administrateurs ne reçoivent pas de SMS de suivi pour l'instant.",
+        "recycler": "Recevez un SMS quand un collecteur annule votre réservation."
       },
       "turnOff": "Couper les SMS",
       "turnOn": "Recevoir les SMS",
       "turnedOff": "SMS coupés : vous ne recevrez plus de SMS de suivi.",
       "turnedOn": "SMS activés."
+    }
+  },
+  "lots": {
+    "collector": {
+      "nav": "Espace collecteur",
+      "navMissions": "Missions",
+      "navLots": "Mes lots",
+      "title": "Mes lots",
+      "intro": "Vendez aux recycleurs la matière que vous avez collectée : seuls les kilos vérifiés par un administrateur peuvent être mis en vente.",
+      "stock": "Stock vérifié disponible",
+      "noStock": "Pas encore de matière vérifiée à vendre : elle apparaît ici quand vos preuves de collecte sont vérifiées.",
+      "sellTitle": "Mettre un lot en vente",
+      "weight": "Poids (kg, {{max}} au plus)",
+      "pricePerKg": "Prix au kilo (FCFA, facultatif)",
+      "description": "Description (facultatif)",
+      "tooMuch": "Pas plus que votre stock vérifié : {{max}}.",
+      "sell": "Mettre en vente",
+      "sold": "Lot mis en vente : les recycleurs le voient maintenant.",
+      "mine": "Mes lots",
+      "empty": "Aucun lot pour l'instant.",
+      "cancel": "Retirer de la vente",
+      "cancelled": "Lot retiré : son poids revient dans votre stock.",
+      "handOver": "Lot remis au recycleur",
+      "handedOver": "Lot remis : la matière est valorisée.",
+      "release": "Annuler la réservation",
+      "released": "Réservation annulée : le lot est de nouveau disponible."
+    },
+    "recycler": {
+      "title": "Matière disponible",
+      "intro": "Des lots de matière triée et vérifiée, prêts à être recyclés. Réservez un lot pour obtenir le contact du collecteur et organiser l'enlèvement.",
+      "tabs": {
+        "available": "Disponibles",
+        "mine": "Mes réservations"
+      },
+      "empty": {
+        "available": "Aucun lot disponible pour l'instant.",
+        "mine": "Vous n'avez réservé aucun lot."
+      },
+      "reserve": "Réserver ce lot",
+      "reserved": "Lot réservé : appelez le collecteur pour organiser l'enlèvement.",
+      "release": "Annuler la réservation",
+      "released": "Réservation annulée."
+    },
+    "category": "Matière",
+    "allCategories": "Toutes les matières",
+    "price": "{{perKg}} le kilo · {{total}} le lot",
+    "noPrice": "Prix à négocier",
+    "statuses": {
+      "all": "Tous",
+      "available": "Disponibles",
+      "reserved": "Réservés",
+      "handed_over": "Remis",
+      "cancelled": "Retirés"
+    },
+    "admin": {
+      "title": "Lots de matière",
+      "intro": "La matière vérifiée que les collecteurs vendent aux recycleurs, et ce qui leur a été remis.",
+      "empty": "Aucun lot."
+    },
+    "party": {
+      "collector": "Collecteur",
+      "recycler": "Recycleur"
     }
   }
 }

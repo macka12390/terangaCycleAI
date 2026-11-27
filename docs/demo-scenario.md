@@ -48,6 +48,8 @@ Pour la photo « après collecte », prendre une vraie photo d'un sol propre le 
 | 7 | Admin | Preuves → vérifier | Tableau de bord : les kilos apparaissent dans « Plastique » ; frise et carte à jour |
 | 8 | Citoyen | Ouvrir le suivi du numéro | « Terminé — kilos vérifiés » |
 
+Marketplace (30 s, la fin de la chaîne) : en **Recycleur Démo**, réserver le lot de plastique (matière vérifiée, prix au kilo) ; en **Collecteur Démo**, onglet « Mes lots » → « Lot remis au recycleur » ; le tableau de bord admin affiche alors les kilos **remis aux recycleurs**. Message : du dépôt sauvage à la matière recyclée, chaque kilo est tracé.
+
 Multi-organisations (30 s, si le jury demande « et pour plusieurs communes ? ») : se connecter en **Admin UCG Pikine (démo)** — il ne voit que les dépôts de Pikine et Guédiawaye, pas ceux de Dakar ; puis en **Super Admin Démo** → Organisations : chaque structure a sa zone, un dépôt va automatiquement à la plus précise.
 
 Variante si le temps le permet : signaler `2-plastique-hesitant.jpg` pour montrer que sous 60 % de confiance, l'IA ne décide rien à la place de l'humain.

@@ -17,6 +17,10 @@ export const PATHS = {
   /** Espace collecteur. */
   collector: '/collector/missions',
   collectorMission: '/collector/missions/:id',
+  /** Lots de matière du collecteur (étape 5). */
+  collectorLots: '/collector/lots',
+  /** Espace recycleur : lots disponibles et réservations. */
+  recycler: '/recycler/lots',
   /** Console administrateur. */
   admin: '/admin',
   adminReports: '/admin/reports',
@@ -29,4 +33,6 @@ export const PATHS = {
   adminOrganisations: '/admin/organisations',
   /** Journal des SMS envoyés. */
   adminNotifications: '/admin/sms',
+  /** Lots vendus aux recycleurs. */
+  adminLots: '/admin/lots',
 } as const

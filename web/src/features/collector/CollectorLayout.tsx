@@ -1,6 +1,6 @@
 import { CircleUserRound, LogOut, Recycle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet, useNavigate } from 'react-router'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
 import { DemoTag } from '../../ui/common.tsx'
@@ -23,7 +23,8 @@ export function CollectorLayout() {
           </span>
           <Link to={PATHS.account} className="ml-auto flex min-h-11 items-center gap-1 font-semibold text-mint">
             <CircleUserRound aria-hidden="true" className="size-5" />
-            {t('account.link')}
+            {/* Sur téléphone : icône seule, libellé gardé pour les lecteurs d'écran. */}
+            <span className="sr-only sm:not-sr-only">{t('account.link')}</span>
           </Link>
           <button
             type="button"
@@ -34,10 +35,31 @@ export function CollectorLayout() {
             className="flex min-h-11 items-center gap-2 font-semibold text-mint"
           >
             <LogOut aria-hidden="true" className="size-5" />
-            {t('admin.logout')}
+            <span className="sr-only sm:not-sr-only">{t('admin.logout')}</span>
           </button>
         </div>
       </header>
+      <nav aria-label={t('lots.collector.nav')} className="border-b border-line bg-surface">
+        <ul className="mx-auto flex max-w-2xl gap-1 px-4">
+          {[
+            { to: PATHS.collector, label: t('lots.collector.navMissions') },
+            { to: PATHS.collectorLots, label: t('lots.collector.navLots') },
+          ].map((link) => (
+            <li key={link.to}>
+              <NavLink
+                to={link.to}
+                className={({ isActive }) =>
+                  `flex min-h-11 items-center border-b-4 px-3 font-semibold ${
+                    isActive ? 'border-brand-600 text-brand-900' : 'border-transparent text-muted'
+                  }`
+                }
+              >
+                {link.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
       <main className="mx-auto w-full max-w-2xl flex-1 p-4">
         <Outlet />
       </main>

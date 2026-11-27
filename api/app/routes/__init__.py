@@ -8,6 +8,7 @@ from app.routes.lots import bp as lots_bp
 from app.routes.missions import bp as missions_bp
 from app.routes.notifications import bp as notifications_bp
 from app.routes.organisations import bp as organisations_bp
+from app.routes.payments import bp as payments_bp
 from app.routes.proofs import bp as proofs_bp
 from app.routes.reports import bp as reports_bp
 from app.routes.system import bp as system_bp
@@ -25,6 +26,7 @@ BLUEPRINTS = (
     organisations_bp,
     notifications_bp,
     lots_bp,
+    payments_bp,
     uploads_bp,
 )
 

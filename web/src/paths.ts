@@ -19,6 +19,8 @@ export const PATHS = {
   collectorMission: '/collector/missions/:id',
   /** Lots de matière du collecteur (étape 5). */
   collectorLots: '/collector/lots',
+  /** Gains du collecteur (étape 6). */
+  collectorEarnings: '/collector/gains',
   /** Espace recycleur : lots disponibles et réservations. */
   recycler: '/recycler/lots',
   /** Console administrateur. */
@@ -35,4 +37,6 @@ export const PATHS = {
   adminNotifications: '/admin/sms',
   /** Lots vendus aux recycleurs. */
   adminLots: '/admin/lots',
+  /** Paiements : tarifs, rémunérations, historique. */
+  adminPayments: '/admin/payments',
 } as const

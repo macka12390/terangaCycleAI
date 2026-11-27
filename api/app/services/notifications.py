@@ -34,6 +34,7 @@ KIND_LABELS = {
     "proof.disputed": "Preuve contestée",
     "lot.reserved": "Lot réservé",
     "lot.released": "Réservation annulée",
+    "payment.received": "Paiement reçu",
 }
 
 
@@ -241,3 +242,16 @@ def lot_released(lot, recipient: User | None, by_collector: bool) -> None:
         recipient, "lot.released",
         f"la réservation du lot ({_lot_label(lot)}) a été annulée par {who}.",
     )
+
+
+# --- Paiements (étape 6) ------------------------------------------------------------------
+
+
+def payment_received(payment) -> None:
+    amount = f"{payment.amount_fcfa:,}".replace(",", " ")
+    if payment.kind == "collector_reward":
+        reason = f"rémunération de {_kg(payment.weight_kg)} kg vérifiés"
+    else:
+        reason = f"paiement du lot de {_kg(payment.weight_kg)} kg"
+    simulated = " Paiement simulé : aucun argent n'a été transféré." if payment.is_simulated else ""
+    notify(payment.payee, "payment.received", f"vous avez reçu {amount} FCFA ({reason}).{simulated}")

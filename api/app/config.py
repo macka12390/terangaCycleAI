@@ -54,6 +54,9 @@ class Config:
     # pour une démo sur scène sans accès au journal du serveur. Jamais avec un vrai fournisseur.
     OTP_EXPOSE_CODE = os.environ.get("OTP_EXPOSE_CODE", "false").strip().lower() == "true"
 
+    # Paiements mobile money (étape 6) : simulated = aucun argent ne bouge.
+    PAYMENT_PROVIDER = os.environ.get("PAYMENT_PROVIDER", "simulated").strip().lower()
+
 
 class TestConfig(Config):
     TESTING = True

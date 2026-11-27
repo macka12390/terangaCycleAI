@@ -44,6 +44,7 @@ export function CollectorLayout() {
           {[
             { to: PATHS.collector, label: t('lots.collector.navMissions') },
             { to: PATHS.collectorLots, label: t('lots.collector.navLots') },
+            { to: PATHS.collectorEarnings, label: t('payments.collector.nav') },
           ].map((link) => (
             <li key={link.to}>
               <NavLink

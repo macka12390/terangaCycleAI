@@ -6,6 +6,7 @@ import { CollectorLayout } from './features/collector/CollectorLayout.tsx'
 import { CollectorMissionPage } from './features/collector/CollectorMissionPage.tsx'
 import { CollectorMissionsPage } from './features/collector/CollectorMissionsPage.tsx'
 import { CollectorLotsPage } from './features/lots/CollectorLotsPage.tsx'
+import { CollectorEarningsPage } from './features/payments/CollectorEarningsPage.tsx'
 import { RecyclerLotsPage } from './features/lots/RecyclerLotsPage.tsx'
 import { QrCodePage } from './features/citizen/QrCodePage.tsx'
 import { TrackingPage } from './features/citizen/TrackingPage.tsx'
@@ -27,6 +28,7 @@ import {
   AdminMissionsPage,
   AdminNotificationsPage,
   AdminOrganisationsPage,
+  AdminPaymentsPage,
   AdminProofsPage,
   AdminReportsPage,
 } from './features/admin/lazyPages.tsx'
@@ -72,6 +74,7 @@ export const routes: RouteObject[] = [
           { path: PATHS.collector, element: <CollectorMissionsPage /> },
           { path: PATHS.collectorMission, element: <CollectorMissionPage /> },
           { path: PATHS.collectorLots, element: <CollectorLotsPage /> },
+          { path: PATHS.collectorEarnings, element: <CollectorEarningsPage /> },
         ],
       },
       {
@@ -92,6 +95,7 @@ export const routes: RouteObject[] = [
           { path: PATHS.adminOrganisations, element: <AdminOrganisationsPage /> },
           { path: PATHS.adminNotifications, element: <AdminNotificationsPage /> },
           { path: PATHS.adminLots, element: <AdminLotsPage /> },
+          { path: PATHS.adminPayments, element: <AdminPaymentsPage /> },
         ],
       },
       { path: '*', element: <NotFoundPage /> },

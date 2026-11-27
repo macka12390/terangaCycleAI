@@ -156,6 +156,12 @@ def release(lot_id: int, user: User) -> Lot:
     if user.id not in (lot.recycler_id, lot.collector_id):
         raise forbidden("Cette réservation n'est pas la vôtre.")
     recycler = lot.recycler
+    # Lot déjà payé (étape 6) : la réservation ne s'annule plus dans l'application.
+    from app.models import Payment
+
+    if Payment.query.filter_by(lot_id=lot.id).filter(Payment.status != "failed").first() is not None:
+        raise ApiError(409, "LOT_ALREADY_PAID",
+                       "Ce lot est déjà payé : sa réservation ne peut plus être annulée ici.")
     if not transition(Lot, lot.id, ("reserved",), "available", recycler_id=None, reserved_at=None):
         db.session.rollback()
         raise invalid_transition("Ce lot n'est pas réservé.", lot.status)

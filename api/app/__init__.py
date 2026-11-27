@@ -76,4 +76,7 @@ def create_app(config_object: type | None = None, overrides: dict | None = None)
     from app.sms import init_sms
 
     init_sms(app)
+    from app.payments_provider import init_payments
+
+    init_payments(app)
     return app

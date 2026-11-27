@@ -42,6 +42,11 @@ export function LotCard({ lot, actions }: { lot: Lot; actions?: ReactNode }) {
         <WasteTypeBadge type={lot.category} />
         <span className="text-xl font-bold text-ink">{formatKg(lot.weight_kg)}</span>
         <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_STYLE[lot.status]}`}>{lot.status_label}</span>
+        {lot.payment && lot.payment.status === 'succeeded' && (
+          <span className="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-bold text-surface">
+            {t(lot.payment.is_simulated ? 'payments.lotPaidSimulated' : 'payments.lotPaid', { amount: formatFcfa(lot.payment.amount_fcfa) })}
+          </span>
+        )}
         <span className="ml-auto text-sm text-muted">{formatDate(lot.created_at)}</span>
       </div>
       <p className="text-ink">

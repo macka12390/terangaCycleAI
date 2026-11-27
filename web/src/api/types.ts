@@ -198,6 +198,13 @@ export interface DashboardStats {
   }
   demo: { included: boolean; demo_reports: number }
   /** Étape 5 : matière vendue aux recycleurs. */
+  /** Étape 6 : paiements (simulés tant qu'aucun vrai fournisseur n'est branché). */
+  payments?: {
+    rewards_paid_fcfa: number
+    rewards_due_fcfa: number
+    lot_payments_fcfa: number
+    simulated: boolean
+  }
   marketplace?: {
     available_kg: number
     reserved_kg: number
@@ -253,4 +260,46 @@ export interface Lot {
   handed_over_at: string | null
   created_at: string
   contact_visible: boolean
+  /** Étape 6 : paiement du lot par le recycleur, ou `null`. */
+  payment?: { id: number; status: PaymentStatus; status_label: string; amount_fcfa: number; is_simulated: boolean } | null
+}
+
+/** Paiement mobile money (étape 6). */
+export type PaymentStatus = 'pending' | 'processing' | 'succeeded' | 'failed'
+export type PaymentKind = 'collector_reward' | 'lot_payment'
+
+export interface PaymentEntry {
+  id: number
+  kind: PaymentKind
+  kind_label: string
+  status: PaymentStatus
+  status_label: string
+  amount_fcfa: number
+  weight_kg: number
+  price_per_kg: number
+  category: Category
+  category_label: string
+  payee: { id: number; name: string } | null
+  payer: { id: number; name: string } | null
+  organisation: OrganisationSummary | null
+  tracking_number: string | null
+  lot_id: number | null
+  provider: string
+  is_simulated: boolean
+  provider_ref: string | null
+  failure_reason: string | null
+  attempts: number
+  created_at: string
+  completed_at: string | null
+}
+
+export interface PaymentSummary {
+  rewards_paid_fcfa: number
+  rewards_due_fcfa: number
+  lot_payments_fcfa: number
+}
+
+export interface PaymentProviderInfo {
+  name: string
+  simulated: boolean
 }

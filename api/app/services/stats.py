@@ -20,6 +20,7 @@ from app.extensions import db
 from app.models import CollectionProof, Mission, Report, StatusEvent
 from app.serializers import event_to_dict
 from app.services.lots import lot_stats
+from app.services.payments import payment_stats
 from app.utils.time import utcnow
 
 TIMELINE_DAYS = 14
@@ -131,6 +132,7 @@ def compute_stats(include_demo: bool = True, organisation_id: int | None = None)
         "ai": _ai_stats(reports),
         "organisation_id": organisation_id,
         "marketplace": lot_stats(organisation_id),
+        "payments": payment_stats(organisation_id),
         "demo": {
             "included": include_demo,
             "demo_reports": db.session.query(func.count(Report.id))

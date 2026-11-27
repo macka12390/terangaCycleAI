@@ -13,6 +13,9 @@ import type {
   Tracking,
   User,
   AuditEntry,
+  PaymentEntry,
+  PaymentProviderInfo,
+  PaymentSummary,
   Lot,
   LotStatus,
   NotificationEntry,
@@ -342,4 +345,47 @@ export async function handOverLot(id: number): Promise<Lot> {
 
 export async function cancelLot(id: number): Promise<Lot> {
   return (await http.post(`/lots/${id}/cancel`)).data.lot
+}
+
+// --- Paiements (étape 6) -------------------------------------------------------------------
+
+export interface PaymentList {
+  payments: PaymentEntry[]
+  summary: PaymentSummary
+  provider: PaymentProviderInfo
+}
+
+export async function listPayments(filters: { organisationId?: number } = {}): Promise<PaymentList> {
+  const params = { organisation_id: filters.organisationId, limit: 200 }
+  const body = (await http.get('/payments', { params })).data
+  return { payments: body.payments, summary: body.summary, provider: body.provider }
+}
+
+export async function payPayment(id: number): Promise<PaymentEntry> {
+  return (await http.post(`/payments/${id}/pay`)).data.payment
+}
+
+export async function payAllRewards(
+  organisationId?: number,
+): Promise<{ succeeded: number; failed: number; amount_fcfa: number }> {
+  return (await http.post('/payments/rewards/pay-all', organisationId ? { organisation_id: organisationId } : {})).data
+    .result
+}
+
+export async function accrueRewards(organisationId?: number): Promise<number> {
+  return (await http.post('/payments/rewards/accrue', organisationId ? { organisation_id: organisationId } : {})).data
+    .created
+}
+
+export async function getTariffs(organisationId?: number): Promise<Record<Category, number | null> | null> {
+  const params = organisationId ? { organisation_id: organisationId } : {}
+  return (await http.get('/tariffs', { params })).data.tariffs
+}
+
+export async function setTariff(category: Category, pricePerKg: number, organisationId?: number): Promise<void> {
+  await http.put('/tariffs', { category, price_per_kg: pricePerKg, organisation_id: organisationId })
+}
+
+export async function payLot(id: number): Promise<PaymentEntry> {
+  return (await http.post(`/lots/${id}/pay`)).data.payment
 }

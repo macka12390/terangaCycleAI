@@ -31,7 +31,8 @@
         "body": "Seuls les kilogrammes vérifiés comptent."
       }
     },
-    "promise": "Données hébergées et gouvernées au Sénégal, sans API d'IA étrangère obligatoire."
+    "promise": "Données hébergées et gouvernées au Sénégal, sans API d'IA étrangère obligatoire.",
+    "login": "Se connecter"
   },
   "consent": {
     "title": "Avant votre premier signalement",
@@ -267,7 +268,7 @@
     "network": "Le serveur ne répond pas. Vérifiez la connexion, puis réessayez.",
     "generic": "L'opération n'a pas pu aboutir. Réessayez dans quelques instants.",
     "VALIDATION_ERROR": "Certaines informations ne sont pas valides. Vérifiez-les, puis réessayez.",
-    "UNAUTHORIZED": "Votre session de démonstration a expiré. Choisissez à nouveau un compte.",
+    "UNAUTHORIZED": "Votre session a expiré. Reconnectez-vous.",
     "FORBIDDEN": "Cet espace est réservé à un autre rôle.",
     "COLLECTOR_NOT_VERIFIED": "Votre compte collecteur n'est pas encore vérifié : vous ne pouvez pas accepter de mission.",
     "NOT_FOUND": "Élément introuvable. Actualisez la liste.",
@@ -275,7 +276,14 @@
     "MISSION_ALREADY_TAKEN": "Cette mission vient d'être acceptée par un autre collecteur.",
     "FILE_TOO_LARGE": "La photo est trop lourde (8 Mo au plus). Reprenez-la.",
     "UNSUPPORTED_FILE": "Ce fichier n'est pas une photo JPEG, PNG ou WebP. Reprenez la photo.",
-    "INTERNAL_ERROR": "Un problème est survenu sur le serveur. Réessayez dans quelques instants."
+    "INTERNAL_ERROR": "Un problème est survenu sur le serveur. Réessayez dans quelques instants.",
+    "OTP_INVALID": "Code incorrect. Vérifiez le SMS reçu.",
+    "OTP_EXPIRED": "Ce code a expiré ou a déjà servi. Demandez un nouveau code.",
+    "OTP_LOCKED": "Trop d'essais avec ce code. Demandez un nouveau code.",
+    "OTP_TOO_SOON": "Un code vient d'être envoyé. Patientez avant d'en redemander un.",
+    "OTP_RATE_LIMITED": "Trop de codes demandés pour ce numéro. Réessayez dans quelques minutes.",
+    "SMS_FAILED": "Le SMS n'a pas pu être envoyé. Réessayez.",
+    "DEMO_DISABLED": "Les comptes de démonstration sont désactivés : connectez-vous par SMS."
   },
   "statuses": {
     "report": {
@@ -317,7 +325,9 @@
       }
     },
     "verified": "Compte vérifié",
-    "notVerified": "Compte non vérifié : ne peut pas accepter de mission"
+    "notVerified": "Compte non vérifié : ne peut pas accepter de mission",
+    "disabled": "Les comptes de démonstration sont désactivés sur cette instance.",
+    "useSms": "Se connecter par SMS"
   },
   "admin": {
     "nav": {
@@ -441,5 +451,24 @@
   "photoPicker": {
     "camera": "Prendre une photo",
     "gallery": "Importer une photo"
+  },
+  "login": {
+    "title": "Se connecter",
+    "intro": "Recevez un code par SMS : pas de mot de passe à retenir.",
+    "phoneLabel": "Numéro de téléphone",
+    "phoneHint": "Mobile sénégalais, par exemple 77 123 45 67.",
+    "phoneInvalid": "Saisissez un mobile sénégalais à 9 chiffres commençant par 70, 71, 75, 76, 77 ou 78.",
+    "sendCode": "Recevoir le code par SMS",
+    "codeSent": "Code envoyé par SMS au {{phone}}.",
+    "codeLabel": "Code reçu (6 chiffres)",
+    "nameLabel": "Votre prénom (facultatif)",
+    "nameHint": "Utile seulement à la première connexion, pour créer votre compte.",
+    "submit": "Se connecter",
+    "resend": "Renvoyer le code",
+    "resendIn": "Nouveau code possible dans {{seconds}} s",
+    "changePhone": "Changer de numéro",
+    "wrongCode": "Code incorrect. Essais restants : {{count}}.",
+    "testMode": "Mode test : aucun SMS n'est envoyé. Votre code : {{code}}",
+    "demo": "Essayer avec un compte de démonstration"
   }
 }

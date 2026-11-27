@@ -40,6 +40,12 @@ Erreur (toujours ce format, message en français lisible par l'utilisateur) :
 | 401 | `UNAUTHORIZED` | Jeton absent, invalide ou expiré |
 | 403 | `FORBIDDEN` | Rôle non autorisé ou ressource d'un autre utilisateur |
 | 403 | `COLLECTOR_NOT_VERIFIED` | Collecteur non vérifié qui tente d'accepter une mission |
+| 403 | `DEMO_DISABLED` | Comptes de démonstration désactivés (`DEMO_AUTH_ENABLED=false`) |
+| 400 | `OTP_INVALID` | Code SMS incorrect (`details.remaining_attempts`) |
+| 400 | `OTP_EXPIRED` | Code expiré, déjà utilisé ou jamais demandé |
+| 429 | `OTP_LOCKED` | 5 codes faux : demander un nouveau code |
+| 429 | `OTP_TOO_SOON` / `OTP_RATE_LIMITED` | 1 code par minute, 3 par quart d'heure (`details.retry_after` en secondes) |
+| 502 | `SMS_FAILED` | Le fournisseur de SMS a échoué |
 | 404 | `NOT_FOUND` | Ressource ou route inconnue |
 | 409 | `INVALID_TRANSITION` | Le statut actuel ne permet pas l'opération |
 | 409 | `MISSION_ALREADY_TAKEN` | Mission déjà acceptée par un autre collecteur |
@@ -103,8 +109,10 @@ Proof:                                      pending ─► verified | rejected |
 
 ```json
 { "id": 3, "name": "Collecteur Démo (vérifié)", "role": "collector",
-  "is_verified": true, "is_demo": true, "demo_login": "collecteur-demo" }
+  "is_verified": true, "is_demo": true, "demo_login": "collecteur-demo", "phone": null }
 ```
+
+Compte réel : `"is_demo": false`, `"demo_login": null`, `"phone": "+221771234567"`.
 
 `role` : `citizen`, `admin` ou `collector`.
 
@@ -235,6 +243,20 @@ Légende accès : 🌐 public · 👤 citoyen (jeton facultatif) · 🛡️ admi
 | GET | `/api/auth/me` | jeton | — | `{ success, user }` |
 
 Comptes : `citoyen-demo`, `admin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
+`demo-accounts` renvoie aussi `demo_enabled` ; s'il vaut `false`, n'afficher que la connexion par SMS.
+
+### Connexion par code SMS (OTP)
+
+| Méthode | Route | Accès | Corps | Réponse |
+|---|---|---|---|---|
+| POST | `/api/auth/otp/request` | 🌐 | `{ "phone": "77 123 45 67" }` | `{ success, phone: "+221771234567", expires_in: 300, resend_in: 60 }` |
+| POST | `/api/auth/otp/verify` | 🌐 | `{ "phone": "77 123 45 67", "code": "123456", "name": "Awa" }` | 201 (compte créé) ou 200 : `{ success, token, user, created }` |
+
+- Numéro : mobile sénégalais, toutes écritures acceptées (`77 123 45 67`, `+221…`, `00221…`).
+- Code : 6 chiffres, valable 5 minutes, 5 essais. Un nouveau code annule le précédent.
+- Premier code vérifié pour un numéro inconnu : compte **citoyen** créé (`name` facultatif, « Citoyen » par défaut). Les comptes **collecteur** et **admin** sont créés à l'avance (`flask --app run create-user`) ; leur titulaire se connecte ensuite par SMS.
+- Le jeton s'utilise exactement comme celui de la démo (`Authorization: Bearer`).
+- Mode test (`SMS_PROVIDER=console`, par défaut) : aucun SMS n'est envoyé, le message s'affiche dans le terminal du backend (numéro masqué). Avec `OTP_EXPOSE_CODE=true`, la réponse de `/otp/request` contient aussi `dev_code`, pour une démo sur scène ; à ne jamais activer avec un vrai fournisseur.
 
 ### Classification IA
 

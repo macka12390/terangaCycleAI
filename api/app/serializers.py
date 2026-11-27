@@ -20,6 +20,7 @@ def user_to_dict(user: User) -> dict:
         "is_verified": user.is_verified,
         "is_demo": user.is_demo,
         "demo_login": user.demo_login,
+        "phone": user.phone,
     }
 
 

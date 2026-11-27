@@ -28,6 +28,34 @@ def register_commands(app: Flask) -> None:
 
         click.echo(f"{clear_demo()} signalements de démonstration retirés.")
 
+    @app.cli.command("create-user")
+    @click.option("--phone", required=True, help="Mobile sénégalais, ex. 77 123 45 67")
+    @click.option("--name", required=True, help="Nom affiché")
+    @click.option(
+        "--role", type=click.Choice(["citizen", "collector", "admin"]), default="collector",
+        show_default=True,
+    )
+    @click.option("--verified", is_flag=True, help="Collecteur vérifié (peut accepter des missions)")
+    def create_user_command(phone: str, name: str, role: str, verified: bool):
+        """Crée un compte réel ; la personne se connecte ensuite par code SMS."""
+        from app.models import User
+        from app.utils.errors import ApiError
+        from app.utils.phone import mask_phone, normalize_phone
+
+        try:
+            normalized = normalize_phone(phone)
+        except ApiError as exc:
+            raise click.BadParameter(exc.message, param_hint="--phone") from None
+        if User.query.filter_by(phone=normalized).first() is not None:
+            raise click.ClickException(f"Un compte existe déjà pour {mask_phone(normalized)}.")
+        user = User(
+            name=name.strip(), phone=normalized, role=role, is_verified=verified, is_demo=False
+        )
+        db.session.add(user)
+        db.session.commit()
+        state = " (vérifié)" if verified else ""
+        click.echo(f"Compte {role}{state} créé pour {mask_phone(normalized)} : « {user.name} ».")
+
     @app.cli.command("reset-db")
     @click.confirmation_option(prompt="Effacer TOUTE la base locale et les photos ?")
     def reset_db_command():

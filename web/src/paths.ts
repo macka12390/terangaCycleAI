@@ -8,6 +8,8 @@ export const PATHS = {
   citizenReport: '/citizen/report',
   citizenQr: '/citizen/qr',
   citizenTracking: '/citizen/tracking/:id',
+  /** Connexion par code SMS (comptes réels). */
+  login: '/connexion',
   /** Comptes de démonstration (choix du rôle). */
   demo: '/demo',
   /** Espace collecteur. */

@@ -12,6 +12,7 @@ import { HomePage } from './features/home/HomePage.tsx'
 import { NotFoundPage } from './features/not-found/NotFoundPage.tsx'
 import { ReportEntry } from './features/report/ReportEntry.tsx'
 import { DemoLoginPage } from './features/session/DemoLoginPage.tsx'
+import { LoginPage } from './features/session/LoginPage.tsx'
 import { RequireRole } from './features/session/RequireRole.tsx'
 import { PATHS } from './paths.ts'
 import {
@@ -41,6 +42,7 @@ export const routes: RouteObject[] = [
       { path: PATHS.consent, element: <ConsentPage /> },
       // Ancien parcours en trois écrans : remplacé par le formulaire en un écran.
       { path: '/signaler/*', element: <Navigate to={PATHS.citizenReport} replace /> },
+      { path: PATHS.login, element: <LoginPage /> },
       { path: PATHS.demo, element: <DemoLoginPage /> },
       {
         element: (

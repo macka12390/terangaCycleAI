@@ -17,7 +17,10 @@ export interface User {
   role: Role
   is_verified: boolean
   is_demo: boolean
-  demo_login: string
+  /** Comptes de démonstration seulement ; `null` pour un compte réel (connexion par SMS). */
+  demo_login: string | null
+  /** Compte réel : numéro E.164 (+221…). */
+  phone?: string | null
 }
 
 /** Résultat de classification. `suggested_category` est `null` sous 60 % de confiance. */

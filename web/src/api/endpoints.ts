@@ -33,6 +33,38 @@ export async function demoLogin(login: string): Promise<{ token: string; user: U
   return { token, user }
 }
 
+// --- Connexion par code SMS (OTP) ----------------------------------------------------------
+
+export interface OtpSent {
+  /** Numéro normalisé par le serveur (+221…). */
+  phone: string
+  expiresIn: number
+  resendIn: number
+  /** Mode test seulement (OTP_EXPOSE_CODE) : le code, pour une démo sans accès au serveur. */
+  devCode: string | null
+}
+
+export async function requestOtp(phone: string): Promise<OtpSent> {
+  const body = (await http.post('/auth/otp/request', { phone })).data
+  return {
+    phone: body.phone,
+    expiresIn: body.expires_in,
+    resendIn: body.resend_in,
+    devCode: typeof body.dev_code === 'string' ? body.dev_code : null,
+  }
+}
+
+export async function verifyOtp(
+  phone: string,
+  code: string,
+  name?: string,
+): Promise<{ token: string; user: User; created: boolean }> {
+  const payload: Record<string, string> = { phone, code }
+  if (name?.trim()) payload.name = name.trim()
+  const { token, user, created } = (await http.post('/auth/otp/verify', payload)).data
+  return { token, user, created: created === true }
+}
+
 export async function me(): Promise<User> {
   return (await http.get('/auth/me')).data.user
 }

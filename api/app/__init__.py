@@ -57,4 +57,7 @@ def create_app(config_object: type | None = None, overrides: dict | None = None)
             app.logger.info("schema_column_added %s", column)
         ensure_demo_users()
     init_ai(app)
+    from app.sms import init_sms
+
+    init_sms(app)
     return app

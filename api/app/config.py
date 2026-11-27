@@ -39,11 +39,29 @@ class Config:
 
     AUTH_TOKEN_MAX_AGE = 7 * 24 * 3600
 
+    # Comptes de démonstration (connexion sans code). À mettre à false en production.
+    DEMO_AUTH_ENABLED = os.environ.get("DEMO_AUTH_ENABLED", "true").strip().lower() == "true"
+
+    # Connexion par code SMS (OTP).
+    SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "console").strip().lower()
+    OTP_LENGTH = 6
+    OTP_TTL_SECONDS = 5 * 60
+    OTP_RESEND_SECONDS = 60
+    OTP_MAX_ATTEMPTS = 5
+    OTP_MAX_PER_WINDOW = 3
+    OTP_WINDOW_SECONDS = 15 * 60
+    # Mode test seulement (SMS_PROVIDER=console) : renvoie aussi le code dans la réponse,
+    # pour une démo sur scène sans accès au journal du serveur. Jamais avec un vrai fournisseur.
+    OTP_EXPOSE_CODE = os.environ.get("OTP_EXPOSE_CODE", "false").strip().lower() == "true"
+
 
 class TestConfig(Config):
     TESTING = True
     SECRET_KEY = "test-secret-key"  # noqa: S105  (clé de test, jamais utilisée hors pytest)
     AI_BACKEND = "manual"
+    SMS_PROVIDER = "console"
+    DEMO_AUTH_ENABLED = True
+    OTP_EXPOSE_CODE = False
 
 
 def load_secret_key(instance_path: str) -> str:

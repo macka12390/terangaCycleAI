@@ -9,16 +9,11 @@ import type { Role, User } from '../../api/types.ts'
 import { PATHS } from '../../paths.ts'
 import { DemoTag, ErrorMessage, Loading } from '../../ui/common.tsx'
 import { useLoad } from '../../ui/load.ts'
+import { nextPath } from './login.ts'
 import { saveSession } from './session.ts'
 
 // Comptes de démonstration (cahier des charges §2) : la liste vient de l'API
 // (GET /api/auth/demo-accounts) ; un toucher ouvre l'espace du rôle. Comptes fictifs.
-
-const HOME: Record<Role, string> = {
-  citizen: PATHS.citizenReport,
-  collector: PATHS.collector,
-  admin: PATHS.admin,
-}
 
 const ICON: Record<Role, typeof UserRound> = {
   citizen: UserRound,
@@ -35,13 +30,13 @@ export function DemoLoginPage() {
   const [failure, setFailure] = useState<string | null>(null)
 
   async function choose(account: User) {
+    if (!account.demo_login) return
     setPending(account.demo_login)
     setFailure(null)
     try {
       const { token, user } = await demoLogin(account.demo_login)
       saveSession(token, user)
-      const next = params.get('next')
-      void navigate(next?.startsWith('/') ? next : HOME[user.role], { replace: true })
+      void navigate(nextPath(params.get('next'), user.role), { replace: true })
     } catch (error) {
       setFailure(errorCode(error))
     } finally {
@@ -62,12 +57,20 @@ export function DemoLoginPage() {
       <p className="text-ink">{t('demoLogin.intro')}</p>
       {load.state === 'loading' && <Loading />}
       {load.state === 'error' && <ErrorMessage code={load.code} onRetry={reload} />}
-      {load.state === 'ready' && (
+      {load.state === 'ready' && load.data.length === 0 && (
+        <div className="flex flex-col gap-3 rounded-xl border-2 border-line p-4">
+          <p className="text-ink">{t('demoLogin.disabled')}</p>
+          <Link to={PATHS.login} className="font-bold text-brand-600 underline">
+            {t('demoLogin.useSms')}
+          </Link>
+        </div>
+      )}
+      {load.state === 'ready' && load.data.length > 0 && (
         <ul className="flex flex-col gap-3">
           {load.data.map((account) => {
             const Icon = ICON[account.role]
             return (
-              <li key={account.demo_login}>
+              <li key={account.demo_login ?? account.id}>
                 <button
                   type="button"
                   onClick={() => void choose(account)}

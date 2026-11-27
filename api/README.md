@@ -22,6 +22,7 @@ Vérifier : <http://localhost:5000/api/health>. La base SQLite (`instance/terang
 | `flask --app run seed-demo` | 10 signalements de démo à Dakar, tous statuts, marqués `is_demo` |
 | `flask --app run clear-demo` | Retire les données de démo et leurs photos |
 | `flask --app run reset-db` | Efface toute la base locale et les photos (demande confirmation) |
+| `flask --app run create-user --phone "77 123 45 67" --name "Moussa" --role collector --verified` | Crée un compte réel (collecteur, admin) qui se connecte ensuite par SMS |
 | `python -m pytest` | Tests (boucle complète + règles métier) |
 
 Tester depuis un téléphone sur le même Wi-Fi : `HOST=0.0.0.0` dans `.env` (copier `.env.example`). Attention : le navigateur ne donne la position GPS qu'en **HTTPS** ou sur `localhost` (voir Risques).
@@ -73,6 +74,16 @@ Contraintes `CHECK` en base : statuts et catégories valides, poids > 0, coordon
 8. Photos contrôlées (type réel via Pillow, 8 Mo max, taille en pixels bornée), ré-encodées sans EXIF.
 9. Aucun GPS ni donnée personnelle dans les journaux ; clé secrète et base hors Git (`instance/`).
 10. Envoi idempotent avec `client_uuid` (renvoi hors ligne sans doublon).
+
+## Connexion par SMS (OTP)
+
+Deux modes coexistent : les **comptes de démonstration** (sans code, `DEMO_AUTH_ENABLED=true`) et les **comptes réels** par numéro de téléphone et code SMS à 6 chiffres.
+
+- `SMS_PROVIDER=console` (par défaut) : mode test, le SMS s'affiche dans le terminal du backend, numéro masqué. Aucun compte ni coût.
+- Le code n'est jamais stocké en clair (empreinte HMAC) ; 5 min de validité, 5 essais, 1 envoi par minute et 3 par quart d'heure par numéro.
+- Le premier passage crée un compte citoyen ; collecteurs et admins sont créés avec `create-user`.
+- Un vrai fournisseur (Orange SMS API…) se branche dans `app/sms/` sans toucher au reste.
+- Les bases créées avant cette étape sont mises à niveau au démarrage (table `users` reconstruite, données conservées).
 
 ## IA
 

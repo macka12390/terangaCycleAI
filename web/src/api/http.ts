@@ -8,12 +8,15 @@ export class ApiError extends Error {
   /** Code d'erreur du contrat (`mission_already_taken`…) ou `network`. */
   readonly code: string
   readonly status: number
+  /** Précisions du contrat (`remaining_attempts`, `retry_after`, `field`…). */
+  readonly details: Record<string, unknown>
 
-  constructor(code: string, status: number) {
+  constructor(code: string, status: number, details: Record<string, unknown> = {}) {
     super(code)
     this.name = 'ApiError'
     this.code = code
     this.status = status
+    this.details = details
   }
 }
 
@@ -27,9 +30,16 @@ http.interceptors.request.use((config) => {
 
 http.interceptors.response.use(undefined, (error: unknown) => {
   if (error instanceof AxiosError && error.response) {
-    const body = error.response.data as { error?: { code?: unknown } } | undefined
+    const body = error.response.data as
+      | { error?: { code?: unknown; details?: unknown } }
+      | undefined
     const code = typeof body?.error?.code === 'string' ? body.error.code : 'server_error'
-    return Promise.reject(new ApiError(code, error.response.status))
+    const details = body?.error?.details
+    const extra =
+      details && typeof details === 'object' && !Array.isArray(details)
+        ? (details as Record<string, unknown>)
+        : {}
+    return Promise.reject(new ApiError(code, error.response.status, extra))
   }
   return Promise.reject(new ApiError('network', 0))
 })

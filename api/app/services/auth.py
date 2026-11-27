@@ -13,7 +13,7 @@ from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from app.extensions import db
 from app.models import User
-from app.utils.errors import forbidden, not_found, unauthorized
+from app.utils.errors import ApiError, forbidden, not_found, unauthorized
 
 # Comptes fictifs, clairement identifiés : aucun nom, téléphone ni e-mail réel.
 DEMO_ACCOUNTS = (
@@ -60,7 +60,15 @@ def issue_token(user: User) -> str:
     return _serializer().dumps({"uid": user.id})
 
 
+def ensure_demo_auth_enabled() -> None:
+    if not current_app.config["DEMO_AUTH_ENABLED"]:
+        raise ApiError(
+            403, "DEMO_DISABLED", "Les comptes de démonstration sont désactivés : connectez-vous par SMS."
+        )
+
+
 def login_demo(login: str) -> tuple[str, User]:
+    ensure_demo_auth_enabled()
     user = User.query.filter_by(demo_login=login).first()
     if user is None:
         raise not_found("Compte de démonstration inconnu.")
@@ -86,6 +94,9 @@ def user_from_request() -> User | None:
     user = db.session.get(User, payload.get("uid"))
     if user is None:
         raise unauthorized("Compte introuvable : reconnectez-vous.")
+    # Démo désactivée : les jetons déjà émis pour les comptes de démo ne valent plus rien.
+    if user.demo_login and not current_app.config["DEMO_AUTH_ENABLED"]:
+        raise unauthorized("Les comptes de démonstration sont désactivés : connectez-vous par SMS.")
     return user
 
 

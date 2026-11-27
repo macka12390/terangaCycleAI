@@ -1,4 +1,4 @@
-import { BarChart3, Camera, CheckCircle2, Recycle, ShieldCheck, Truck, Users } from 'lucide-react'
+import { BarChart3, Camera, CheckCircle2, LogIn, Recycle, ShieldCheck, Truck, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -45,6 +45,13 @@ export function HomePage() {
             >
               <Users aria-hidden="true" className="size-6" />
               {t('home.demoAccess')}
+            </Link>
+            <Link
+              to={PATHS.login}
+              className="flex min-h-12 items-center justify-center gap-3 rounded-xl border-2 border-surface/60 px-5 font-bold text-surface"
+            >
+              <LogIn aria-hidden="true" className="size-6" />
+              {t('home.login')}
             </Link>
           </div>
           <p className="text-sm text-mint">{t('home.reportHint')}</p>

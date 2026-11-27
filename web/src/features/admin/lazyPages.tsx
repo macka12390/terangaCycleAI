@@ -32,3 +32,6 @@ export const AdminNotificationsPage = lazy(() =>
 export const AdminLotsPage = lazy(() =>
   import('./AdminLotsPage.tsx').then((m) => ({ default: m.AdminLotsPage })),
 )
+export const AdminPaymentsPage = lazy(() =>
+  import('./AdminPaymentsPage.tsx').then((m) => ({ default: m.AdminPaymentsPage })),
+)

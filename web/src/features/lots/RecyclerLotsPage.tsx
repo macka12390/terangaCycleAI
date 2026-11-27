@@ -1,9 +1,9 @@
-import { CircleUserRound, HandCoins, Loader2, LogOut, Recycle, Undo2 } from 'lucide-react'
+import { Banknote, CircleUserRound, HandCoins, Loader2, LogOut, Recycle, Undo2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 
-import { listLots, releaseLot, reserveLot } from '../../api/endpoints.ts'
+import { listLots, payLot, releaseLot, reserveLot } from '../../api/endpoints.ts'
 import { errorCode } from '../../api/http.ts'
 import type { Category } from '../../api/types.ts'
 import { PATHS } from '../../paths.ts'
@@ -11,7 +11,9 @@ import { DemoTag, Empty, ErrorMessage, Loading } from '../../ui/common.tsx'
 import { useLoad } from '../../ui/load.ts'
 import { WASTE_TYPES } from '../classify/wasteTypes.ts'
 import { clearSession, getUser } from '../session/session.ts'
+import { canPayLot } from '../payments/payments.ts'
 import { LotCard } from './LotCard.tsx'
+import { formatFcfa } from './lots.ts'
 
 // Espace recycleur (étape 5) : lots de matière vérifiée, par matière ; réserver un lot donne
 // le contact du collecteur pour organiser l'enlèvement.
@@ -133,7 +135,22 @@ export function RecyclerLotsPage() {
                         {busy === lot.id ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : <HandCoins aria-hidden="true" className="size-5" />}
                         {t('lots.recycler.reserve')}
                       </button>
-                    ) : lot.status === 'reserved' && lot.recycler?.id === user?.id ? (
+                    ) : lot.recycler?.id === user?.id && (lot.status === 'reserved' || canPayLot(lot, user?.id)) ? (
+                      <>
+                      {canPayLot(lot, user?.id) && (
+                        <button
+                          type="button"
+                          disabled={busy !== null}
+                          onClick={() =>
+                            void act(lot.id, async () => payLot(lot.id), t('payments.recycler.paid', { amount: formatFcfa(lot.total_price) }))
+                          }
+                          className={`${BUTTON} bg-brand-600 text-surface`}
+                        >
+                          {busy === lot.id ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : <Banknote aria-hidden="true" className="size-5" />}
+                          {t('payments.recycler.pay', { amount: formatFcfa(lot.total_price) })}
+                        </button>
+                      )}
+                      {lot.status === 'reserved' && lot.payment?.status !== 'succeeded' && (
                       <button
                         type="button"
                         disabled={busy !== null}
@@ -143,6 +160,8 @@ export function RecyclerLotsPage() {
                         <Undo2 aria-hidden="true" className="size-5" />
                         {t('lots.recycler.release')}
                       </button>
+                      )}
+                      </>
                     ) : undefined
                   }
                 />

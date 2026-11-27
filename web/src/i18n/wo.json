@@ -290,7 +290,10 @@
     "LAST_SUPERADMIN": "C'est le dernier super administrateur actif : nommez-en un autre d'abord.",
     "NAME_TAKEN": "Une organisation porte déjà ce nom.",
     "INSUFFICIENT_STOCK": "Stock vérifié insuffisant pour ce lot.",
-    "LOT_ALREADY_RESERVED": "Ce lot vient d'être réservé par un autre recycleur."
+    "LOT_ALREADY_RESERVED": "Ce lot vient d'être réservé par un autre recycleur.",
+    "PAYMENT_IN_PROGRESS": "Ce paiement est déjà en cours ou effectué.",
+    "LOT_ALREADY_PAID": "Ce lot est déjà payé.",
+    "LOT_PRICE_MISSING": "Ce lot n'a pas de prix : réglez directement avec le collecteur."
   },
   "statuses": {
     "report": {
@@ -355,7 +358,8 @@
       "accounts": "Comptes",
       "organisations": "Organisations",
       "notifications": "SMS",
-      "lots": "Lots"
+      "lots": "Lots",
+      "payments": "Paiements"
     },
     "logout": "Quitter",
     "dashboard": {
@@ -386,7 +390,9 @@
       },
       "organisation": "Organisation",
       "allOrganisations": "Toutes les organisations",
-      "handedOverKg": "Remis aux recycleurs"
+      "handedOverKg": "Remis aux recycleurs",
+      "rewardsPaid": "Versé aux collecteurs",
+      "rewardsPaidSimulated": "Versé aux collecteurs (simulé)"
     },
     "reports": {
       "title": "Modération des signalements",
@@ -722,6 +728,59 @@
     "party": {
       "collector": "Collecteur",
       "recycler": "Recycleur"
+    }
+  },
+  "payments": {
+    "simulatedTag": "Simulé",
+    "simulatedBanner": "Paiements simulés : aucun argent n'est transféré. Les montants et les références SIM-… servent à la démonstration.",
+    "reason": {
+      "collector_reward": "Rémunération : {{kg}} de {{category}} vérifiés × {{price}} le kilo",
+      "lot_payment": "Paiement d'un lot : {{kg}} de {{category}} × {{price}} le kilo"
+    },
+    "parties": "À {{payee}} · de {{payer}}",
+    "failed": "Échec : {{reason}}. Relancez le paiement.",
+    "lotPaid": "Payé {{amount}}",
+    "lotPaidSimulated": "Payé {{amount}} (simulé)",
+    "summary": {
+      "rewardsPaid": "Versé aux collecteurs",
+      "rewardsDue": "Reste à verser",
+      "lotPayments": "Lots payés par les recycleurs"
+    },
+    "admin": {
+      "title": "Paiements",
+      "intro": "Rémunérez les collecteurs pour les kilos vérifiés, selon les tarifs de votre organisation, et suivez les lots payés par les recycleurs.",
+      "due": "À verser aux collecteurs",
+      "accrue": "Calculer les rémunérations",
+      "accrued": "Rémunérations calculées : {{count}}.",
+      "payAll": "Tout payer ({{amount}})",
+      "paidAll": "Versements effectués : {{count}}, pour {{amount}}.",
+      "pay": "Payer",
+      "retry": "Relancer",
+      "paid": "{{amount}} versés à {{name}}.",
+      "payFailed": "Le paiement a échoué : relancez-le.",
+      "noneDue": "Rien à verser pour l'instant.",
+      "history": "Historique",
+      "noHistory": "Aucun paiement pour l'instant."
+    },
+    "tariffs": {
+      "title": "Tarifs de rémunération",
+      "intro": "Montant versé au collecteur par kilo vérifié, pour chaque matière. Sans tarif, aucune rémunération n'est calculée.",
+      "label": "Tarif pour {{category}}",
+      "none": "Aucun",
+      "unit": "FCFA / kg",
+      "save": "Enregistrer"
+    },
+    "collector": {
+      "nav": "Gains",
+      "title": "Mes gains",
+      "intro": "Vos rémunérations pour les kilos vérifiés et les paiements des lots vendus aux recycleurs.",
+      "received": "Reçu",
+      "due": "À recevoir",
+      "empty": "Aucun paiement pour l'instant : vos collectes vérifiées apparaîtront ici."
+    },
+    "recycler": {
+      "pay": "Payer {{amount}}",
+      "paid": "Lot payé : {{amount}}."
     }
   }
 }

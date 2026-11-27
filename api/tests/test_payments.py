@@ -151,6 +151,8 @@ def test_recycler_pays_a_reserved_lot_once(api, app, flow):
     assert paid["status"] == "succeeded" and paid["amount_fcfa"] == 3000 and paid["payer"]["name"] == "Recyclage Dakar"
     twice = api.client.post(f"/api/lots/{lot['id']}/pay", headers=recycler)
     assert twice.get_json()["error"]["code"] == "LOT_ALREADY_PAID"
+    locked = api.client.post(f"/api/lots/{lot['id']}/release", headers=recycler)
+    assert locked.get_json()["error"]["code"] == "LOT_ALREADY_PAID"
     listed = api.client.get("/api/lots?scope=mine", headers=recycler).get_json()["lots"][0]
     assert listed["payment"]["status"] == "succeeded"
 

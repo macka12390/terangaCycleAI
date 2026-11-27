@@ -304,12 +304,15 @@ def totals(filters: list) -> dict[str, int]:
     }
 
 
-def summary_for(user: User) -> dict[str, int]:
+def summary_for(user: User, organisation_id: object = None) -> dict[str, int]:
     if user.role == "collector":
         return totals([Payment.payee_id == user.id])
     if user.role == "recycler":
         return totals([Payment.payer_id == user.id])
     if sees_all(user):
+        # Super admin : l'organisation choisie, sinon toutes.
+        if organisation_id not in (None, ""):
+            return totals([Payment.organisation_id == int(str(organisation_id))])
         return totals([])
     return totals([Payment.organisation_id == (user.organisation_id or -1)])
 

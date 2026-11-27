@@ -1,4 +1,5 @@
 import {
+  Banknote,
   BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
@@ -113,6 +114,13 @@ export function AdminDashboard() {
         <StatCard label={t('admin.dashboard.collectionsCompleted')} value={stats.collections.completed} icon={<CheckCircle2 aria-hidden="true" />} />
         <StatCard label={t('admin.dashboard.proofsPending')} value={stats.proofs.pending} icon={<ClipboardCheck aria-hidden="true" />} />
         <StatCard label={t('admin.dashboard.reportsRejected')} value={stats.reports.rejected} icon={<FileWarning aria-hidden="true" />} />
+        {stats.payments && (
+          <StatCard
+            label={t(stats.payments.simulated ? 'admin.dashboard.rewardsPaidSimulated' : 'admin.dashboard.rewardsPaid')}
+            value={`${stats.payments.rewards_paid_fcfa.toLocaleString('fr-FR')} FCFA`}
+            icon={<Banknote aria-hidden="true" />}
+          />
+        )}
         {stats.marketplace && (
           <StatCard
             label={t('admin.dashboard.handedOverKg')}

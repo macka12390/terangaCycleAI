@@ -21,7 +21,7 @@ def index():
     rows = payment_service.list_payments(g.user, request.args)
     return ok(
         payments=[payment_to_dict(row) for row in rows],
-        summary=payment_service.summary_for(g.user),
+        summary=payment_service.summary_for(g.user, request.args.get("organisation_id")),
         provider=_provider(),
     )
 

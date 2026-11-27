@@ -12,6 +12,8 @@ import type {
   ReportStatus,
   Tracking,
   User,
+  AuditEntry,
+  Role,
 } from './types.ts'
 
 // --- Configuration ------------------------------------------------------------------------
@@ -179,4 +181,59 @@ export async function verifyProof(
 
 export async function dashboardStats(): Promise<DashboardStats> {
   return (await http.get('/dashboard/stats')).data.stats
+}
+
+// --- Comptes (étape 2 : admin et super admin) ----------------------------------------------
+
+export interface AccountFilters {
+  role?: Role | ''
+  status?: 'active' | 'suspended' | ''
+  q?: string
+}
+
+export interface AccountList {
+  accounts: User[]
+  total: number
+  /** Rôles que l'utilisateur connecté peut attribuer ou gérer. */
+  manageableRoles: Role[]
+}
+
+export async function listAccounts(filters: AccountFilters = {}): Promise<AccountList> {
+  const params = Object.fromEntries(Object.entries(filters).filter(([, value]) => value))
+  const body = (await http.get('/accounts', { params: { ...params, limit: 200 } })).data
+  return { accounts: body.accounts, total: body.total, manageableRoles: body.manageable_roles }
+}
+
+export interface NewAccount {
+  phone: string
+  name: string
+  role: Role
+  is_verified: boolean
+}
+
+export async function createAccount(account: NewAccount): Promise<User> {
+  return (await http.post('/accounts', account)).data.account
+}
+
+export async function updateAccount(
+  id: number,
+  changes: Partial<Pick<User, 'name' | 'role' | 'is_verified'>>,
+): Promise<User> {
+  return (await http.patch(`/accounts/${id}`, changes)).data.account
+}
+
+export async function suspendAccount(
+  id: number,
+  reason?: string,
+): Promise<{ account: User; releasedMissions: number }> {
+  const body = (await http.post(`/accounts/${id}/suspend`, reason ? { reason } : {})).data
+  return { account: body.account, releasedMissions: body.released_missions }
+}
+
+export async function reactivateAccount(id: number): Promise<User> {
+  return (await http.post(`/accounts/${id}/reactivate`)).data.account
+}
+
+export async function listAudit(): Promise<AuditEntry[]> {
+  return (await http.get('/audit', { params: { limit: 50 } })).data.entries
 }

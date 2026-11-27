@@ -11,14 +11,22 @@ from functools import wraps
 from flask import current_app, g, request
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
+from app.constants import ADMIN_ROLES
 from app.extensions import db
 from app.models import User
 from app.utils.errors import ApiError, forbidden, not_found, unauthorized
+from app.utils.time import utcnow
 
 # Comptes fictifs, clairement identifiés : aucun nom, téléphone ni e-mail réel.
 DEMO_ACCOUNTS = (
     {"demo_login": "citoyen-demo", "name": "Citoyen Démo", "role": "citizen", "is_verified": True},
     {"demo_login": "admin-demo", "name": "Admin Démo", "role": "admin", "is_verified": True},
+    {
+        "demo_login": "superadmin-demo",
+        "name": "Super Admin Démo",
+        "role": "superadmin",
+        "is_verified": True,
+    },
     {
         "demo_login": "collecteur-demo",
         "name": "Collecteur Démo (vérifié)",
@@ -34,6 +42,18 @@ DEMO_ACCOUNTS = (
 )
 
 _SALT = "terangacycle-demo-auth"
+
+
+def is_admin(user: User | None) -> bool:
+    """Accès à la console d'administration : admin ou super admin."""
+    return user is not None and user.role in ADMIN_ROLES
+
+
+def ensure_active(user: User) -> None:
+    if not user.is_active:
+        raise ApiError(
+            403, "ACCOUNT_SUSPENDED", "Ce compte est suspendu. Contactez l'équipe TerangaCycle."
+        )
 
 
 def ensure_demo_users() -> None:
@@ -72,6 +92,9 @@ def login_demo(login: str) -> tuple[str, User]:
     user = User.query.filter_by(demo_login=login).first()
     if user is None:
         raise not_found("Compte de démonstration inconnu.")
+    ensure_active(user)
+    user.last_login_at = utcnow()
+    db.session.commit()
     return issue_token(user), user
 
 
@@ -97,6 +120,8 @@ def user_from_request() -> User | None:
     # Démo désactivée : les jetons déjà émis pour les comptes de démo ne valent plus rien.
     if user.demo_login and not current_app.config["DEMO_AUTH_ENABLED"]:
         raise unauthorized("Les comptes de démonstration sont désactivés : connectez-vous par SMS.")
+    # Compte suspendu : ses jetons déjà émis sont refusés immédiatement.
+    ensure_active(user)
     return user
 
 
@@ -109,7 +134,9 @@ def auth_required(*roles: str) -> Callable:
             user = user_from_request()
             if user is None:
                 raise unauthorized()
-            if roles and user.role not in roles:
+            # Le super admin a tous les droits de l'admin.
+            allowed = user.role in roles or ("admin" in roles and user.role == "superadmin")
+            if roles and not allowed:
                 raise forbidden()
             g.user = user
             return view(*args, **kwargs)

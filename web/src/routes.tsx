@@ -16,6 +16,7 @@ import { LoginPage } from './features/session/LoginPage.tsx'
 import { RequireRole } from './features/session/RequireRole.tsx'
 import { PATHS } from './paths.ts'
 import {
+  AdminAccountsPage,
   AdminDashboard,
   AdminLayout,
   AdminMapPage,
@@ -70,6 +71,7 @@ export const routes: RouteObject[] = [
           { path: PATHS.adminMissions, element: <AdminMissionsPage /> },
           { path: PATHS.adminProofs, element: <AdminProofsPage /> },
           { path: PATHS.adminMap, element: <AdminMapPage /> },
+          { path: PATHS.adminAccounts, element: <AdminAccountsPage /> },
         ],
       },
       { path: '*', element: <NotFoundPage /> },

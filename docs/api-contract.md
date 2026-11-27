@@ -46,6 +46,10 @@ Erreur (toujours ce format, message en français lisible par l'utilisateur) :
 | 429 | `OTP_LOCKED` | 5 codes faux : demander un nouveau code |
 | 429 | `OTP_TOO_SOON` / `OTP_RATE_LIMITED` | 1 code par minute, 3 par quart d'heure (`details.retry_after` en secondes) |
 | 502 | `SMS_FAILED` | Le fournisseur de SMS a échoué |
+| 403 | `ACCOUNT_SUSPENDED` | Compte suspendu : connexion et jetons refusés |
+| 403 | `DEMO_ACCOUNT_LOCKED` | Les comptes de démonstration ne sont pas modifiables |
+| 409 | `PHONE_TAKEN` | Un compte existe déjà avec ce numéro |
+| 409 | `LAST_SUPERADMIN` | Dernier super admin réel actif : ni rétrogradé ni suspendu |
 | 404 | `NOT_FOUND` | Ressource ou route inconnue |
 | 409 | `INVALID_TRANSITION` | Le statut actuel ne permet pas l'opération |
 | 409 | `MISSION_ALREADY_TAKEN` | Mission déjà acceptée par un autre collecteur |
@@ -114,7 +118,9 @@ Proof:                                      pending ─► verified | rejected |
 
 Compte réel : `"is_demo": false`, `"demo_login": null`, `"phone": "+221771234567"`.
 
-`role` : `citizen`, `admin` ou `collector`.
+`role` : `citizen`, `collector`, `admin` ou `superadmin` (le super admin a tous les droits de l'admin, plus la gestion des admins et le journal d'audit).
+
+Champs de gestion (étape 2) : `role_label`, `is_active`, `suspended_at`, `suspended_reason`, `created_at`, `last_login_at`.
 
 ### `ai` (résultat de classification)
 
@@ -242,7 +248,7 @@ Légende accès : 🌐 public · 👤 citoyen (jeton facultatif) · 🛡️ admi
 | POST | `/api/auth/demo` | 🌐 | `{ "login": "admin-demo" }` | `{ success, token, user }` |
 | GET | `/api/auth/me` | jeton | — | `{ success, user }` |
 
-Comptes : `citoyen-demo`, `admin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
+Comptes : `citoyen-demo`, `admin-demo`, `superadmin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
 `demo-accounts` renvoie aussi `demo_enabled` ; s'il vaut `false`, n'afficher que la connexion par SMS.
 
 ### Connexion par code SMS (OTP)
@@ -414,6 +420,24 @@ Tout est calculé à la volée depuis la base.
 - `reports.validated` = signalements passés par la validation (`approved`, `assigned`, `collected`, `completed`).
 - `collections.completed` = missions terminées (preuve envoyée) ; `collections.verified` = preuves vérifiées.
 - `ai.agreement_rate` : part des signalements validés où la proposition IA (≥ 60 %) égale la catégorie finale. Calculée **uniquement** sur les modes `model` et `prototype` ; `null` s'il n'y a rien à évaluer. Le mode `manual` n'est jamais compté comme une performance IA.
+
+### Comptes (étape 2)
+
+| Méthode | Route | Accès | Corps | Réponse |
+|---|---|---|---|---|
+| GET | `/api/accounts` | 🛡️ | — | `{ success, accounts: [user], total, manageable_roles }` |
+| POST | `/api/accounts` | 🛡️ | `{ "phone", "name", "role", "is_verified" }` | 201 `{ success, account }` |
+| PATCH | `/api/accounts/<id>` | 🛡️ | `{ "name"?, "role"?, "is_verified"? }` | `{ success, account }` |
+| POST | `/api/accounts/<id>/suspend` | 🛡️ | `{ "reason"? }` | `{ success, account, released_missions }` |
+| POST | `/api/accounts/<id>/reactivate` | 🛡️ | — | `{ success, account }` |
+| GET | `/api/audit` | super admin | — | `{ success, entries: [{ action, action_label, actor, target, details, at }] }` |
+
+- Filtres de `GET /api/accounts` : `role`, `status` (`active` ou `suspended`), `q` (nom, ou au moins 3 chiffres du numéro), `limit`, `offset`.
+- `manageable_roles` : rôles que l'utilisateur connecté peut attribuer. Admin : `citizen`, `collector`. Super admin : tous. Utiliser cette liste pour le menu des rôles.
+- Personne ne modifie son propre compte ; les comptes de démo sont en lecture seule ; le dernier super admin réel actif est protégé.
+- Suspendre un collecteur **libère ses missions acceptées** (elles redeviennent disponibles) ; celles dont la preuve attend une vérification ne bougent pas. Le compte suspendu ne peut plus se connecter et ses jetons sont refusés (403 `ACCOUNT_SUSPENDED`).
+- Chaque création, modification, suspension et réactivation est inscrite au journal d'audit (numéro masqué).
+- Premier super admin : `flask --app run create-user --phone "…" --name "…" --role superadmin`.
 
 ### Photos
 

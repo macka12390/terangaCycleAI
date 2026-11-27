@@ -1,5 +1,6 @@
 from flask import Flask
 
+from app.routes.accounts import bp as accounts_bp
 from app.routes.ai import bp as ai_bp
 from app.routes.auth import bp as auth_bp
 from app.routes.dashboard import bp as dashboard_bp
@@ -17,6 +18,7 @@ BLUEPRINTS = (
     missions_bp,
     proofs_bp,
     dashboard_bp,
+    accounts_bp,
     uploads_bp,
 )
 

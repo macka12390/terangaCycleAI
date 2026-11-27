@@ -35,6 +35,7 @@ export const HOME: Record<Role, string> = {
   citizen: PATHS.citizenReport,
   collector: PATHS.collector,
   admin: PATHS.admin,
+  superadmin: PATHS.admin,
 }
 
 /** Après connexion : la page demandée si c'est un chemin interne, sinon l'espace du rôle. */

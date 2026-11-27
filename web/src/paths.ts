@@ -21,4 +21,6 @@ export const PATHS = {
   adminMissions: '/admin/missions',
   adminProofs: '/admin/proofs',
   adminMap: '/admin/map',
+  /** Gestion des comptes (admin, super admin). */
+  adminAccounts: '/admin/accounts',
 } as const

@@ -1,4 +1,4 @@
-import { BarChart3, ClipboardCheck, LogOut, Map, Recycle, ShieldCheck, Truck } from 'lucide-react'
+import { BarChart3, ClipboardCheck, LogOut, Map, Recycle, ShieldCheck, Truck, UsersRound } from 'lucide-react'
 import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useNavigate } from 'react-router'
@@ -16,6 +16,7 @@ const LINKS = [
   { to: PATHS.adminMissions, key: 'missions', Icon: Truck, end: false },
   { to: PATHS.adminProofs, key: 'proofs', Icon: ClipboardCheck, end: false },
   { to: PATHS.adminMap, key: 'map', Icon: Map, end: false },
+  { to: PATHS.adminAccounts, key: 'accounts', Icon: UsersRound, end: false },
 ] as const
 
 export function AdminLayout() {

@@ -1,13 +1,16 @@
 """Représentation JSON des objets, conforme à docs/api-contract.md."""
 
+import json
+
 from app.ai.service import suggested_category
 from app.constants import (
     AI_MODE_LABELS,
     MISSION_STATUS_LABELS,
     PROOF_STATUS_LABELS,
     REPORT_STATUS_LABELS,
+    ROLES,
 )
-from app.models import CollectionProof, Mission, Report, StatusEvent, User
+from app.models import AuditLog, CollectionProof, Mission, Report, StatusEvent, User
 from app.utils.images import photo_url
 from app.utils.time import iso
 
@@ -21,6 +24,32 @@ def user_to_dict(user: User) -> dict:
         "is_demo": user.is_demo,
         "demo_login": user.demo_login,
         "phone": user.phone,
+        "role_label": ROLES.get(user.role, user.role),
+        "is_active": user.is_active,
+        "suspended_at": iso(user.suspended_at),
+        "suspended_reason": user.suspended_reason,
+        "created_at": iso(user.created_at),
+        "last_login_at": iso(user.last_login_at),
+    }
+
+
+AUDIT_ACTION_LABELS = {
+    "account.create": "Compte créé",
+    "account.update": "Compte modifié",
+    "account.suspend": "Compte suspendu",
+    "account.reactivate": "Compte réactivé",
+}
+
+
+def audit_to_dict(entry: AuditLog) -> dict:
+    return {
+        "id": entry.id,
+        "action": entry.action,
+        "action_label": AUDIT_ACTION_LABELS.get(entry.action, entry.action),
+        "actor": user_summary(entry.actor),
+        "target": user_summary(entry.target),
+        "details": json.loads(entry.details) if entry.details else None,
+        "at": iso(entry.created_at),
     }
 
 

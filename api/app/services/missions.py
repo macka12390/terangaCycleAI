@@ -13,6 +13,7 @@ from app.constants import (
 )
 from app.extensions import db
 from app.models import CollectionProof, Mission, Report, User
+from app.services.auth import is_admin
 from app.services.events import record_event, transition
 from app.utils.errors import ApiError, forbidden, invalid_transition, not_found, validation_error
 from app.utils.images import delete_image, read_photo, store_image
@@ -30,7 +31,7 @@ def list_missions(user: User, args: Mapping) -> list[Mission]:
             query = query.filter(Mission.collector_id == user.id)
         else:
             raise validation_error("« scope » doit valoir available ou mine.", "scope")
-    elif user.role == "admin":
+    elif is_admin(user):
         status = args.get("status")
         if status:
             if status not in MISSION_STATUS_LABELS:
@@ -152,15 +153,8 @@ def start(mission_id: int, collector: User) -> Mission:
     return mission
 
 
-def release(mission_id: int, user: User, data: Mapping) -> Mission:
-    """Libère une mission acceptée : elle redevient disponible pour les autres collecteurs.
-
-    Le collecteur titulaire (acceptée par erreur, empêchement) ou un admin (mission bloquée).
-    """
-    mission = get_mission(mission_id)
-    if user.role != "admin":
-        _ensure_owner(mission, user)
-    note = parse_text(data, "reason")
+def _release(mission: Mission, user: User, note: str | None) -> None:
+    """Remet une mission acceptée en « disponible », sans valider la transaction."""
     previous_collector = mission.collector.name if mission.collector else None
     if not transition(
         Mission,
@@ -180,7 +174,7 @@ def release(mission_id: int, user: User, data: Mapping) -> Mission:
         db.session.rollback()
         raise invalid_transition("Le signalement de cette mission n'est pas en collecte.")
     detail = f"Mission libérée par {user.name}"
-    if user.role == "admin" and previous_collector:
+    if is_admin(user) and previous_collector:
         detail += f" (retirée à {previous_collector})"
     record_event(
         entity="mission",
@@ -199,8 +193,32 @@ def release(mission_id: int, user: User, data: Mapping) -> Mission:
         to_status=ReportStatus.APPROVED,
         actor=user,
     )
+
+
+def release(mission_id: int, user: User, data: Mapping) -> Mission:
+    """Libère une mission acceptée : elle redevient disponible pour les autres collecteurs.
+
+    Le collecteur titulaire (acceptée par erreur, empêchement) ou un admin (mission bloquée).
+    """
+    mission = get_mission(mission_id)
+    if not is_admin(user):
+        _ensure_owner(mission, user)
+    _release(mission, user, parse_text(data, "reason"))
     db.session.commit()
     return mission
+
+
+def release_all_of(collector: User, actor: User, note: str) -> int:
+    """Libère toutes les missions acceptées d'un collecteur (suspension) ; sans commit.
+
+    Les missions dont la preuve attend une vérification ne sont pas touchées.
+    """
+    missions = Mission.query.filter_by(
+        collector_id=collector.id, status=MissionStatus.ACCEPTED
+    ).all()
+    for mission in missions:
+        _release(mission, actor, note)
+    return len(missions)
 
 
 def cancel(mission_id: int, admin: User, data: Mapping) -> Mission:

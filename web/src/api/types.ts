@@ -4,7 +4,7 @@
 export const CATEGORIES = ['plastic', 'metal', 'paper', 'glass', 'organic'] as const
 export type Category = (typeof CATEGORIES)[number]
 
-export type Role = 'citizen' | 'collector' | 'admin'
+export type Role = 'citizen' | 'collector' | 'admin' | 'superadmin'
 export type ReportStatus = 'pending' | 'approved' | 'rejected' | 'assigned' | 'collected' | 'completed'
 export type MissionStatus = 'available' | 'accepted' | 'completed' | 'cancelled'
 export type ProofStatus = 'pending' | 'verified' | 'rejected' | 'disputed'
@@ -21,6 +21,24 @@ export interface User {
   demo_login: string | null
   /** Compte réel : numéro E.164 (+221…). */
   phone?: string | null
+  // Gestion des comptes (étape 2) : présents dans les réponses de /api/accounts et /auth.
+  role_label?: string
+  is_active?: boolean
+  suspended_at?: string | null
+  suspended_reason?: string | null
+  created_at?: string | null
+  last_login_at?: string | null
+}
+
+/** Entrée du journal d'audit (super admin). */
+export interface AuditEntry {
+  id: number
+  action: string
+  action_label: string
+  actor: { id: number; name: string } | null
+  target: { id: number; name: string } | null
+  details: Record<string, unknown> | null
+  at: string
 }
 
 /** Résultat de classification. `suggested_category` est `null` sous 60 % de confiance. */

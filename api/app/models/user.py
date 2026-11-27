@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, Index, Integer, String
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Index, Integer, String, Text, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.constants import ROLES
@@ -29,5 +29,12 @@ class User(db.Model):
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_demo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Compte suspendu : plus de connexion, jetons refusés, missions en cours libérées.
+    # server_default : les lignes existantes sont actives lors de la mise à niveau.
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=true()
+    )
+    suspended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    suspended_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

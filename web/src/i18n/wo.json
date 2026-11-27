@@ -283,7 +283,11 @@
     "OTP_TOO_SOON": "Un code vient d'être envoyé. Patientez avant d'en redemander un.",
     "OTP_RATE_LIMITED": "Trop de codes demandés pour ce numéro. Réessayez dans quelques minutes.",
     "SMS_FAILED": "Le SMS n'a pas pu être envoyé. Réessayez.",
-    "DEMO_DISABLED": "Les comptes de démonstration sont désactivés : connectez-vous par SMS."
+    "DEMO_DISABLED": "Les comptes de démonstration sont désactivés : connectez-vous par SMS.",
+    "ACCOUNT_SUSPENDED": "Ce compte est suspendu. Contactez l'équipe TerangaCycle.",
+    "DEMO_ACCOUNT_LOCKED": "Les comptes de démonstration ne sont pas modifiables.",
+    "PHONE_TAKEN": "Un compte existe déjà avec ce numéro.",
+    "LAST_SUPERADMIN": "C'est le dernier super administrateur actif : nommez-en un autre d'abord."
   },
   "statuses": {
     "report": {
@@ -322,6 +326,10 @@
       "admin": {
         "title": "Administrateur",
         "body": "Modérer, vérifier les preuves, suivre l'impact"
+      },
+      "superadmin": {
+        "title": "Super administrateur",
+        "body": "Gérer les comptes, les rôles et le journal d'audit"
       }
     },
     "verified": "Compte vérifié",
@@ -336,7 +344,8 @@
       "reports": "Modération",
       "missions": "Missions",
       "proofs": "Preuves",
-      "map": "Carte"
+      "map": "Carte",
+      "accounts": "Comptes"
     },
     "logout": "Quitter",
     "dashboard": {
@@ -415,6 +424,70 @@
       "label": "Carte des signalements autour de Dakar",
       "legend": "Légende des statuts",
       "tilesFailed": "Le fond de carte n'a pas pu être chargé (réseau). Les points restent affichés, et la liste ci-dessous donne les mêmes informations."
+    },
+    "accounts": {
+      "title": "Comptes",
+      "intro": "Créez les comptes des collecteurs et des administrateurs, vérifiez-les, changez leur rôle ou suspendez-les. Chaque action est inscrite au journal d'audit.",
+      "filters": {
+        "role": "Rôle",
+        "allRoles": "Tous les rôles",
+        "status": "Statut",
+        "allStatuses": "Tous",
+        "active": "Actifs",
+        "suspended": "Suspendus",
+        "search": "Nom ou numéro",
+        "searchButton": "Rechercher"
+      },
+      "roles": {
+        "citizen": "Citoyen",
+        "collector": "Collecteur",
+        "admin": "Administrateur",
+        "superadmin": "Super administrateur"
+      },
+      "create": {
+        "toggle": "Nouveau compte",
+        "title": "Nouveau compte",
+        "phone": "Téléphone",
+        "name": "Nom",
+        "role": "Rôle",
+        "verified": "Collecteur vérifié (peut accepter des missions)",
+        "submit": "Créer le compte",
+        "done": "Compte créé : {{name}} se connecte avec son numéro, par SMS."
+      },
+      "list": {
+        "empty": "Aucun compte ne correspond.",
+        "phone": "Téléphone",
+        "lastLogin": "Dernière connexion",
+        "never": "Jamais connecté",
+        "suspended": "Suspendu",
+        "verified": "Vérifié",
+        "notVerified": "Non vérifié",
+        "you": "vous",
+        "demo": "Compte de démonstration : non modifiable."
+      },
+      "actions": {
+        "verify": "Vérifier",
+        "unverify": "Retirer la vérification",
+        "suspend": "Suspendre",
+        "reason": "Motif de la suspension",
+        "confirmSuspend": "Confirmer la suspension",
+        "cancel": "Annuler",
+        "suspendHint": "Ses missions acceptées sans preuve seront remises à disposition des autres collecteurs.",
+        "reactivate": "Réactiver",
+        "role": "Rôle",
+        "suspended": "Compte suspendu.",
+        "suspendedReleased": "Compte suspendu : missions remises à disposition : {{count}}.",
+        "reactivated": "Compte réactivé.",
+        "verified": "Collecteur vérifié.",
+        "unverified": "Vérification retirée.",
+        "roleChanged": "Rôle modifié."
+      },
+      "audit": {
+        "title": "Journal d'audit",
+        "empty": "Aucune action enregistrée.",
+        "by": "par {{name}}",
+        "on": "· {{name}}"
+      }
     }
   },
   "collector": {

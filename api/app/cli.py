@@ -32,7 +32,7 @@ def register_commands(app: Flask) -> None:
     @click.option("--phone", required=True, help="Mobile sénégalais, ex. 77 123 45 67")
     @click.option("--name", required=True, help="Nom affiché")
     @click.option(
-        "--role", type=click.Choice(["citizen", "collector", "admin"]), default="collector",
+        "--role", type=click.Choice(["citizen", "collector", "admin", "superadmin"]), default="collector",
         show_default=True,
     )
     @click.option("--verified", is_flag=True, help="Collecteur vérifié (peut accepter des missions)")

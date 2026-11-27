@@ -18,7 +18,7 @@ from sqlalchemy import update
 
 from app.extensions import db
 from app.models import OtpChallenge, User
-from app.services.auth import issue_token
+from app.services.auth import ensure_active, issue_token
 from app.sms import get_sms
 from app.utils.errors import ApiError, validation_error
 from app.utils.phone import normalize_phone
@@ -140,6 +140,9 @@ def verify_code(data: Mapping) -> tuple[str, User, bool]:
         raise ApiError(400, "OTP_EXPIRED", "Code déjà utilisé : demandez un nouveau code.")
 
     user = User.query.filter_by(phone=phone).first()
+    if user is not None and not user.is_active:
+        db.session.commit()  # le code reste consommé
+        ensure_active(user)
     created = user is None
     if created:
         name = parse_text(data, "name", max_length=NAME_MAX_LENGTH) or "Citoyen"

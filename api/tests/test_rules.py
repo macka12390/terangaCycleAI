@@ -28,6 +28,7 @@ def test_demo_auth(api, client):
 
     me = client.get("/api/auth/me", headers=api.headers("admin-demo")).get_json()["user"]
     assert me["role"] == "admin"
+    assert me["last_login_at"] is not None
     assert client.get("/api/auth/me").status_code == 401
     bad = client.get("/api/auth/me", headers={"Authorization": "Bearer faux"})
     assert bad.get_json()["error"]["code"] == "UNAUTHORIZED"

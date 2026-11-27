@@ -16,6 +16,7 @@ from app.constants import (
 )
 from app.extensions import db
 from app.models import Mission, Report, StatusEvent, User
+from app.services.auth import is_admin
 from app.services.events import record_event, transition
 from app.utils.errors import forbidden, invalid_transition, not_found, validation_error
 from app.utils.audio import read_voice, store_voice
@@ -126,7 +127,7 @@ def list_reports(user: User, args: Mapping) -> tuple[list[Report], int]:
     query = Report.query
     if user.role == "citizen":
         query = query.filter(Report.user_id == user.id)
-    elif user.role != "admin":
+    elif not is_admin(user):
         raise forbidden()
 
     status = args.get("status")
@@ -154,7 +155,7 @@ def get_report(report_id: int) -> Report:
 
 def get_report_for(user: User, report_id: int) -> Report:
     report = get_report(report_id)
-    if user.role != "admin" and report.user_id != user.id:
+    if not is_admin(user) and report.user_id != user.id:
         raise forbidden("Ce signalement ne vous appartient pas.")
     return report
 

@@ -12,7 +12,11 @@ ROLES: dict[str, str] = {
     "citizen": "Citoyen",
     "admin": "Administrateur",
     "collector": "Collecteur",
+    "superadmin": "Super administrateur",
 }
+
+# Rôles qui ont accès à la console d'administration (le super admin hérite de l'admin).
+ADMIN_ROLES = ("admin", "superadmin")
 
 
 class ReportStatus:

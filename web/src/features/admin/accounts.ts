@@ -3,7 +3,7 @@
 import type { Role, User } from '../../api/types.ts'
 import { formatPhone } from '../session/login.ts'
 
-export const ROLE_ORDER: Role[] = ['citizen', 'collector', 'admin', 'superadmin']
+export const ROLE_ORDER: Role[] = ['citizen', 'collector', 'recycler', 'admin', 'superadmin']
 
 /** L'utilisateur connecté peut-il modifier ce compte ? */
 export function canManage(actor: User | null, target: User, manageable: Role[]): boolean {

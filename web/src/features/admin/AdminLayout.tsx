@@ -6,6 +6,7 @@ import {
   LogOut,
   Map,
   MessageSquareText,
+  Package,
   Recycle,
   ShieldCheck,
   Truck,
@@ -29,6 +30,7 @@ const LINKS = [
   { to: PATHS.adminProofs, key: 'proofs', Icon: ClipboardCheck, end: false },
   { to: PATHS.adminMap, key: 'map', Icon: Map, end: false },
   { to: PATHS.adminAccounts, key: 'accounts', Icon: UsersRound, end: false },
+  { to: PATHS.adminLots, key: 'lots', Icon: Package, end: false },
   { to: PATHS.adminNotifications, key: 'notifications', Icon: MessageSquareText, end: false },
   { to: PATHS.adminOrganisations, key: 'organisations', Icon: Building2, end: false, superadminOnly: true },
 ] as const

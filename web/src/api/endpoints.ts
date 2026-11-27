@@ -13,6 +13,8 @@ import type {
   Tracking,
   User,
   AuditEntry,
+  Lot,
+  LotStatus,
   NotificationEntry,
   NotificationStatus,
   Organisation,
@@ -303,4 +305,41 @@ export interface NotificationLog {
 export async function listNotifications(status?: NotificationStatus): Promise<NotificationLog> {
   const body = (await http.get('/notifications', { params: { status, limit: 100 } })).data
   return { notifications: body.notifications, provider: body.provider }
+}
+
+// --- Marketplace (étape 5) -----------------------------------------------------------------
+
+export async function listLots(
+  filters: { scope?: 'available' | 'mine'; status?: LotStatus; category?: Category } = {},
+): Promise<Lot[]> {
+  return (await http.get('/lots', { params: { ...filters, limit: 200 } })).data.lots
+}
+
+export async function lotStock(): Promise<Record<Category, number>> {
+  return (await http.get('/lots/stock')).data.stock
+}
+
+export async function createLot(lot: {
+  category: Category
+  weight_kg: number
+  price_per_kg?: number
+  description?: string
+}): Promise<Lot> {
+  return (await http.post('/lots', lot)).data.lot
+}
+
+export async function reserveLot(id: number): Promise<Lot> {
+  return (await http.post(`/lots/${id}/reserve`)).data.lot
+}
+
+export async function releaseLot(id: number): Promise<Lot> {
+  return (await http.post(`/lots/${id}/release`)).data.lot
+}
+
+export async function handOverLot(id: number): Promise<Lot> {
+  return (await http.post(`/lots/${id}/handover`)).data.lot
+}
+
+export async function cancelLot(id: number): Promise<Lot> {
+  return (await http.post(`/lots/${id}/cancel`)).data.lot
 }

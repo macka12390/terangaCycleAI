@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   ClipboardCheck,
   Clock,
+  Factory,
   FileWarning,
   Inbox,
   Scale,
@@ -112,6 +113,13 @@ export function AdminDashboard() {
         <StatCard label={t('admin.dashboard.collectionsCompleted')} value={stats.collections.completed} icon={<CheckCircle2 aria-hidden="true" />} />
         <StatCard label={t('admin.dashboard.proofsPending')} value={stats.proofs.pending} icon={<ClipboardCheck aria-hidden="true" />} />
         <StatCard label={t('admin.dashboard.reportsRejected')} value={stats.reports.rejected} icon={<FileWarning aria-hidden="true" />} />
+        {stats.marketplace && (
+          <StatCard
+            label={t('admin.dashboard.handedOverKg')}
+            value={kg(stats.marketplace.handed_over_kg)}
+            icon={<Factory aria-hidden="true" />}
+          />
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

@@ -5,6 +5,8 @@ import { CitizenReportPage } from './features/citizen/CitizenReportPage.tsx'
 import { CollectorLayout } from './features/collector/CollectorLayout.tsx'
 import { CollectorMissionPage } from './features/collector/CollectorMissionPage.tsx'
 import { CollectorMissionsPage } from './features/collector/CollectorMissionsPage.tsx'
+import { CollectorLotsPage } from './features/lots/CollectorLotsPage.tsx'
+import { RecyclerLotsPage } from './features/lots/RecyclerLotsPage.tsx'
 import { QrCodePage } from './features/citizen/QrCodePage.tsx'
 import { TrackingPage } from './features/citizen/TrackingPage.tsx'
 import { ConsentPage } from './features/consent/ConsentPage.tsx'
@@ -21,6 +23,7 @@ import {
   AdminDashboard,
   AdminLayout,
   AdminMapPage,
+  AdminLotsPage,
   AdminMissionsPage,
   AdminNotificationsPage,
   AdminOrganisationsPage,
@@ -49,6 +52,15 @@ export const routes: RouteObject[] = [
       { path: PATHS.login, element: <LoginPage /> },
       { path: PATHS.account, element: <AccountPage /> },
       { path: PATHS.demo, element: <DemoLoginPage /> },
+      { path: '/recycler', element: <Navigate to={PATHS.recycler} replace /> },
+      {
+        path: PATHS.recycler,
+        element: (
+          <RequireRole role="recycler">
+            <RecyclerLotsPage />
+          </RequireRole>
+        ),
+      },
       {
         element: (
           <RequireRole role="collector">
@@ -59,6 +71,7 @@ export const routes: RouteObject[] = [
           { path: '/collector', element: <Navigate to={PATHS.collector} replace /> },
           { path: PATHS.collector, element: <CollectorMissionsPage /> },
           { path: PATHS.collectorMission, element: <CollectorMissionPage /> },
+          { path: PATHS.collectorLots, element: <CollectorLotsPage /> },
         ],
       },
       {
@@ -78,6 +91,7 @@ export const routes: RouteObject[] = [
           { path: PATHS.adminAccounts, element: <AdminAccountsPage /> },
           { path: PATHS.adminOrganisations, element: <AdminOrganisationsPage /> },
           { path: PATHS.adminNotifications, element: <AdminNotificationsPage /> },
+          { path: PATHS.adminLots, element: <AdminLotsPage /> },
         ],
       },
       { path: '*', element: <NotFoundPage /> },

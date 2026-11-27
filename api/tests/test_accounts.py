@@ -80,7 +80,7 @@ def test_superadmin_manages_everyone_and_inherits_admin_rights(api, app, default
                      organisation_id=default_org)
     assert created.status_code == 201
     listing = api.client.get("/api/accounts", headers=api.headers("superadmin-demo")).get_json()
-    assert listing["manageable_roles"] == ["citizen", "admin", "collector", "superadmin"]
+    assert listing["manageable_roles"] == ["citizen", "admin", "collector", "superadmin", "recycler"]
 
     # Le super admin passe partout où l'admin passe.
     report = api.create_report().get_json()["report"]
@@ -184,7 +184,8 @@ def test_step1_database_gets_account_columns(app):
         connection.exec_driver_sql(step1_users)
         connection.exec_driver_sql(
             "INSERT INTO users_step1 SELECT id, name, demo_login, phone, role, is_verified, "
-            "is_demo, created_at, last_login_at FROM users WHERE role != 'superadmin'"
+            "is_demo, created_at, last_login_at FROM users "
+            "WHERE role IN ('citizen', 'admin', 'collector')"
         )
         connection.exec_driver_sql("DROP TABLE users")
         connection.exec_driver_sql("ALTER TABLE users_step1 RENAME TO users")

@@ -15,7 +15,7 @@ from werkzeug.datastructures import FileStorage
 
 from app.constants import CATEGORIES, AiMode
 from app.extensions import db
-from app.models import CollectionProof, Mission, Notification, Report, StatusEvent, User
+from app.models import CollectionProof, Lot, Mission, Notification, Report, StatusEvent, User
 from app.services import missions as mission_service
 from app.services import proofs as proof_service
 from app.services import reports as report_service
@@ -160,11 +160,28 @@ def seed_demo() -> int:
 
         _shift_back(db.session.get(Report, report.id), days)
         db.session.commit()
+
+    # Marketplace : la matière vérifiée du collecteur de démo, mise en vente.
+    # Papier remis à un recycleur, métal réservé, plastique encore disponible.
+    from app.services import lots as lot_service
+
+    recycler = _user("recycleur-demo")
+    paper = lot_service.create_lot(collector, {"category": "paper", "weight_kg": 25, "price_per_kg": 60,
+                                               "description": "[DÉMO] Cartons secs, ficelés"})
+    lot_service.reserve(paper.id, recycler)
+    lot_service.hand_over(paper.id, collector)
+    metal = lot_service.create_lot(collector, {"category": "metal", "weight_kg": 18, "price_per_kg": 250,
+                                               "description": "[DÉMO] Canettes aluminium compactées"})
+    lot_service.reserve(metal.id, recycler)
+    lot_service.create_lot(collector, {"category": "plastic", "weight_kg": 40, "price_per_kg": 150,
+                                       "description": "[DÉMO] Bouteilles PET triées"})
     return len(DEMO_SITES)
 
 
 def clear_demo() -> int:
     reports = Report.query.filter_by(is_demo=True).all()
+    demo_collectors = [u.id for u in User.query.filter(User.demo_login.isnot(None), User.role == "collector")]
+    Lot.query.filter(Lot.collector_id.in_(demo_collectors)).delete(synchronize_session=False)
     for report in reports:
         StatusEvent.query.filter_by(report_id=report.id).delete()
         Notification.query.filter_by(report_id=report.id).delete()

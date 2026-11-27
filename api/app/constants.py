@@ -13,6 +13,15 @@ ROLES: dict[str, str] = {
     "admin": "Administrateur",
     "collector": "Collecteur",
     "superadmin": "Super administrateur",
+    "recycler": "Recycleur",
+}
+
+# Lots de matière vendus aux recycleurs (étape 5).
+LOT_STATUS_LABELS: dict[str, str] = {
+    "available": "Disponible",
+    "reserved": "Réservé",
+    "handed_over": "Remis au recycleur",
+    "cancelled": "Retiré",
 }
 
 # Types d'organisation qui traitent les signalements (étape 3, multi-organisations).

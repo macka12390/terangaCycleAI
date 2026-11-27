@@ -8,6 +8,7 @@ Une base créée avec une version précédente planterait donc (« no such colum
 """
 
 import logging
+import re
 from collections.abc import Callable
 
 from sqlalchemy import Table
@@ -37,6 +38,11 @@ def _columns(connection: Connection, table: str) -> dict[str, bool]:
     return {row[1]: bool(row[3]) for row in rows}
 
 
+def _normalized(sql: str) -> str:
+    """DDL comparable : sans espaces, guillemets ni casse (SQLite garde le texte d'origine)."""
+    return re.sub(r"\s+", "", sql).replace('"', "").lower()
+
+
 def _needs_rebuild(connection: Connection, table: Table) -> bool:
     existing = _columns(connection, table.name)
     if not existing:
@@ -46,7 +52,12 @@ def _needs_rebuild(connection: Connection, table: Table) -> bool:
             return True
         if column.nullable and existing[column.name] and not column.primary_key:
             return True
-    return False
+    # Contrainte modifiée sans nouvelle colonne (ex. un rôle ajouté à la liste autorisée).
+    stored = connection.exec_driver_sql(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", (table.name,)
+    ).scalar()
+    expected = str(CreateTable(table).compile(dialect=connection.dialect))
+    return stored is not None and _normalized(stored) != _normalized(expected)
 
 
 def _rebuild(connection: Connection, table: Table) -> None:

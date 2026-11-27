@@ -4,7 +4,7 @@
 export const CATEGORIES = ['plastic', 'metal', 'paper', 'glass', 'organic'] as const
 export type Category = (typeof CATEGORIES)[number]
 
-export type Role = 'citizen' | 'collector' | 'admin' | 'superadmin'
+export type Role = 'citizen' | 'collector' | 'admin' | 'superadmin' | 'recycler'
 export type ReportStatus = 'pending' | 'approved' | 'rejected' | 'assigned' | 'collected' | 'completed'
 export type MissionStatus = 'available' | 'accepted' | 'completed' | 'cancelled'
 export type ProofStatus = 'pending' | 'verified' | 'rejected' | 'disputed'
@@ -197,6 +197,13 @@ export interface DashboardStats {
     agreement_rate: number | null
   }
   demo: { included: boolean; demo_reports: number }
+  /** Étape 5 : matière vendue aux recycleurs. */
+  marketplace?: {
+    available_kg: number
+    reserved_kg: number
+    handed_over_kg: number
+    handed_over_by_category: { category: Category; label: string; kg: number }[]
+  }
 }
 
 /** Journal des SMS (étape 4). */
@@ -217,4 +224,33 @@ export interface NotificationEntry {
   tracking_number: string | null
   created_at: string
   sent_at: string | null
+}
+
+/** Lot de matière vérifiée vendu à un recycleur (étape 5). */
+export type LotStatus = 'available' | 'reserved' | 'handed_over' | 'cancelled'
+
+export interface LotParty {
+  id: number
+  name: string
+  /** Visible seulement des parties du lot et des admins. */
+  phone?: string | null
+}
+
+export interface Lot {
+  id: number
+  category: Category
+  category_label: string
+  weight_kg: number
+  price_per_kg: number | null
+  total_price: number | null
+  description: string | null
+  status: LotStatus
+  status_label: string
+  collector: LotParty
+  recycler: LotParty | null
+  organisation: OrganisationSummary | null
+  reserved_at: string | null
+  handed_over_at: string | null
+  created_at: string
+  contact_visible: boolean
 }

@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronLeft, Crown, Loader2, ShieldCheck, Truck, UserRound } from 'lucide-react'
+import { BadgeCheck, ChevronLeft, Crown, Factory, Loader2, ShieldCheck, Truck, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
@@ -20,6 +20,7 @@ const ICON: Record<Role, typeof UserRound> = {
   collector: Truck,
   admin: ShieldCheck,
   superadmin: Crown,
+  recycler: Factory,
 }
 
 export function DemoLoginPage() {

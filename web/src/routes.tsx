@@ -1,14 +1,29 @@
-import type { RouteObject } from 'react-router'
+import { Suspense } from 'react'
+import { Navigate, type RouteObject } from 'react-router'
 
+import { CitizenReportPage } from './features/citizen/CitizenReportPage.tsx'
+import { CollectorLayout } from './features/collector/CollectorLayout.tsx'
+import { CollectorMissionPage } from './features/collector/CollectorMissionPage.tsx'
+import { CollectorMissionsPage } from './features/collector/CollectorMissionsPage.tsx'
+import { QrCodePage } from './features/citizen/QrCodePage.tsx'
+import { TrackingPage } from './features/citizen/TrackingPage.tsx'
 import { ConsentPage } from './features/consent/ConsentPage.tsx'
 import { HomePage } from './features/home/HomePage.tsx'
 import { NotFoundPage } from './features/not-found/NotFoundPage.tsx'
-import { CapturePage } from './features/report/CapturePage.tsx'
-import { ConfirmationPage } from './features/report/ConfirmationPage.tsx'
-import { DetailsPage } from './features/report/DetailsPage.tsx'
 import { ReportEntry } from './features/report/ReportEntry.tsx'
+import { DemoLoginPage } from './features/session/DemoLoginPage.tsx'
+import { RequireRole } from './features/session/RequireRole.tsx'
 import { PATHS } from './paths.ts'
+import {
+  AdminDashboard,
+  AdminLayout,
+  AdminMapPage,
+  AdminMissionsPage,
+  AdminProofsPage,
+  AdminReportsPage,
+} from './features/admin/lazyPages.tsx'
 import { AppLayout } from './ui/AppLayout.tsx'
+import { Loading } from './ui/common.tsx'
 
 // Table des routes, à part d'App.tsx : testable sous Node (App.test.tsx) et sans casser
 // le rechargement à chaud (un module de composants n'exporte que des composants).
@@ -19,10 +34,42 @@ export const routes: RouteObject[] = [
     children: [
       { path: PATHS.home, element: <HomePage /> },
       { path: PATHS.report, element: <ReportEntry /> },
+      { path: '/citizen', element: <Navigate to={PATHS.citizenReport} replace /> },
+      { path: PATHS.citizenReport, element: <CitizenReportPage /> },
+      { path: PATHS.citizenQr, element: <QrCodePage /> },
+      { path: PATHS.citizenTracking, element: <TrackingPage /> },
       { path: PATHS.consent, element: <ConsentPage /> },
-      { path: PATHS.capture, element: <CapturePage /> },
-      { path: PATHS.details, element: <DetailsPage /> },
-      { path: PATHS.confirmation, element: <ConfirmationPage /> },
+      // Ancien parcours en trois écrans : remplacé par le formulaire en un écran.
+      { path: '/signaler/*', element: <Navigate to={PATHS.citizenReport} replace /> },
+      { path: PATHS.demo, element: <DemoLoginPage /> },
+      {
+        element: (
+          <RequireRole role="collector">
+            <CollectorLayout />
+          </RequireRole>
+        ),
+        children: [
+          { path: '/collector', element: <Navigate to={PATHS.collector} replace /> },
+          { path: PATHS.collector, element: <CollectorMissionsPage /> },
+          { path: PATHS.collectorMission, element: <CollectorMissionPage /> },
+        ],
+      },
+      {
+        element: (
+          <RequireRole role="admin">
+            <Suspense fallback={<Loading />}>
+              <AdminLayout />
+            </Suspense>
+          </RequireRole>
+        ),
+        children: [
+          { path: PATHS.admin, element: <AdminDashboard /> },
+          { path: PATHS.adminReports, element: <AdminReportsPage /> },
+          { path: PATHS.adminMissions, element: <AdminMissionsPage /> },
+          { path: PATHS.adminProofs, element: <AdminProofsPage /> },
+          { path: PATHS.adminMap, element: <AdminMapPage /> },
+        ],
+      },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

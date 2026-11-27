@@ -1,22 +1,42 @@
-// Base locale de l'appareil (Dexie, IndexedDB). Version 1 : la table `meta`, réglages
-// clé → valeur (Identifiant d'appareil, consentement, dernière configuration publique
-// reçue de l'API). Les tables suivantes (file
-// hors-ligne, Mes Signalements) arriveront par de nouvelles versions du schéma.
+// Base locale de l'appareil (Dexie, IndexedDB).
+// - Version 1 : `meta`, réglages clé → valeur (Identifiant d'appareil, consentement).
+// - Version 2 : `outbox`, signalements en attente d'envoi (mode hors-ligne, outbox.ts).
 import Dexie, { type EntityTable } from 'dexie'
 
 export const DB_NAME = 'terangacycle'
 
 /** Clés connues de `meta` : une faute de frappe est refusée à la compilation. */
-export type MetaKey = 'deviceId' | 'consent' | 'publicConfig'
+export type MetaKey = 'deviceId' | 'consent'
 
 export interface MetaRow {
   key: MetaKey
   value: unknown
 }
 
-export const db = new Dexie(DB_NAME) as Dexie & { meta: EntityTable<MetaRow, 'key'> }
+/** Signalement gardé sur l'appareil faute de réseau ; `clientId` évite tout doublon. */
+export interface OutboxRow {
+  clientId: string
+  photo: Blob
+  latitude: number
+  longitude: number
+  accuracy?: number
+  comment?: string
+  citizenCategory?: string
+  voice?: Blob | null
+  /** Horodatage de l'appareil (ms), pour l'ordre d'envoi. */
+  createdAt: number
+  attempts: number
+  /** Dernier code d'erreur de l'API (hors panne réseau), s'il y en a un. */
+  lastError?: string
+}
+
+export const db = new Dexie(DB_NAME) as Dexie & {
+  meta: EntityTable<MetaRow, 'key'>
+  outbox: EntityTable<OutboxRow, 'clientId'>
+}
 
 db.version(1).stores({ meta: 'key' })
+db.version(2).stores({ meta: 'key', outbox: 'clientId, createdAt' })
 
 /** Valeur brute de `meta[key]`, `undefined` si absente. À valider par l'appelant. */
 export async function getMeta(key: MetaKey): Promise<unknown> {

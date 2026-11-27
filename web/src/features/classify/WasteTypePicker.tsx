@@ -1,14 +1,9 @@
 import { useId, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import {
-  BottleIcon,
-  CanIcon,
-  CheckIcon,
-  JarIcon,
-  LeafIcon,
-  MixedIcon,
-} from '../../ui/icons.tsx'
+import { Newspaper } from 'lucide-react'
+
+import { BottleIcon, CanIcon, CheckIcon, JarIcon, LeafIcon } from '../../ui/icons.tsx'
 import { WASTE_TYPES, toggleWasteType, type WasteType } from './wasteTypes.ts'
 
 // Composant unique des Types de déchet (story 1.13) : pictogramme, libellé et couleur de
@@ -20,7 +15,7 @@ const ICONS: Record<WasteType, (props: { className?: string }) => ReactNode> = {
   metal: CanIcon,
   glass: JarIcon,
   organic: LeafIcon,
-  mixed: MixedIcon,
+  paper: ({ className }) => <Newspaper aria-hidden="true" className={className} />,
 }
 
 /** Couleur du jeton de chaque type (classes Tailwind écrites en entier pour la génération). */
@@ -29,7 +24,7 @@ const COLOR: Record<WasteType, string> = {
   metal: 'text-waste-metal',
   glass: 'text-waste-glass',
   organic: 'text-waste-organic',
-  mixed: 'text-waste-mixed',
+  paper: 'text-waste-paper',
 }
 
 /** Pastille d'un Type de déchet : pictogramme coloré et libellé en Encre. */

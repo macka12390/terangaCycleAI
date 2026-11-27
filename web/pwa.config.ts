@@ -24,7 +24,13 @@ export const MANIFEST = {
 } as const
 
 // L'API et les sondes ne sont jamais servies par index.html hors ligne.
-export const NAVIGATE_FALLBACK_DENYLIST: RegExp[] = [/^\/v1\//, /^\/healthz/, /^\/readyz/]
+export const NAVIGATE_FALLBACK_DENYLIST: RegExp[] = [
+  /^\/v1\//,
+  /^\/api\//,
+  /^\/uploads\//,
+  /^\/healthz/,
+  /^\/readyz/,
+]
 
 // Précache : la coquille, et seulement les sous-ensembles latin et latin-ext d'Inter
 // (français, wolof) ; les autres restent chargés à la demande. Le manifeste et ses icônes
@@ -34,3 +40,8 @@ export const PRECACHE_GLOB_PATTERNS = [
   'assets/inter-latin-wght-normal-*.woff2',
   'assets/inter-latin-ext-wght-normal-*.woff2',
 ]
+
+// Pages de la console admin, chargées à la demande (features/admin/lazyPages.tsx) avec
+// leurs bibliothèques lourdes (graphiques, carte) : téléchargées en ligne sur l'ordinateur
+// de l'administrateur, jamais précachées sur le téléphone du citoyen.
+export const PRECACHE_GLOB_IGNORES = ['assets/Admin*-*.js', 'assets/Admin*-*.css']

@@ -8,7 +8,7 @@ import { routes } from './routes.tsx'
 import { ConsentPage } from './features/consent/ConsentPage.tsx'
 import { HomePage } from './features/home/HomePage.tsx'
 import { NotFoundPage } from './features/not-found/NotFoundPage.tsx'
-import { CapturePage } from './features/report/CapturePage.tsx'
+import { CitizenReportPage } from './features/citizen/CitizenReportPage.tsx'
 import { ReportEntry } from './features/report/ReportEntry.tsx'
 import fr from './i18n/fr.json'
 import i18n from './i18n/index.ts'
@@ -38,10 +38,10 @@ describe('routes', () => {
     expect(matchedComponent('/')).toBe(HomePage)
   })
 
-  it('le parcours de signalement a ses trois routes', () => {
+  it('le signalement citoyen a son entrée, son consentement et son formulaire', () => {
     expect(matchedComponent('/signaler')).toBe(ReportEntry)
     expect(matchedComponent('/signaler/consentement')).toBe(ConsentPage)
-    expect(matchedComponent('/signaler/capture')).toBe(CapturePage)
+    expect(matchedComponent('/citizen/report')).toBe(CitizenReportPage)
   })
 
   it('une route inconnue affiche la page introuvable', () => {
@@ -92,8 +92,8 @@ describe('rendu en français', () => {
     expect(html).not.toContain(escaped(fr.consent.saveError))
   })
 
-  it('la capture n’affiche rien avant d’avoir lu le consentement', () => {
-    expect(render(<CapturePage />)).toBe('')
+  it('le formulaire n’affiche rien avant d’avoir lu le consentement', () => {
+    expect(render(<CitizenReportPage />)).toBe('')
     expect(render(<ReportEntry />)).toBe('')
   })
 

@@ -1,45 +1,89 @@
+import { BarChart3, Camera, CheckCircle2, Recycle, ShieldCheck, Truck, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
-import { CameraIcon } from '../../ui/icons.tsx'
 import { useFocusOnMount } from '../../ui/useFocusOnMount.ts'
 
-// Écran 1 · Accueil (maquette, nœud 1:2) : en-tête vert foncé, grande carte-bouton
-// « Signaler un dépôt ». Les entrées de rôle (story 2.3), « Mes Signalements » (1.13) et
-// le bandeau démo (2.1) viendront s'ajouter sous la carte.
+// Accueil (cahier des charges §3.1) : valeur du projet, problème, fonctionnement en
+// quatre étapes, accès à l'espace citoyen et aux espaces de démonstration.
+
+const STEPS = [
+  { key: 'report', Icon: Camera },
+  { key: 'moderate', Icon: ShieldCheck },
+  { key: 'collect', Icon: Truck },
+  { key: 'measure', Icon: BarChart3 },
+] as const
+
 export function HomePage() {
   const { t } = useTranslation()
   const titleRef = useFocusOnMount<HTMLHeadingElement>()
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="bg-brand-900 px-4 pt-10 pb-8">
-        <div className="mx-auto flex max-w-md flex-col gap-2">
-          <h1
-            ref={titleRef}
-            tabIndex={-1}
-            className="text-3xl font-bold text-surface focus:outline-none"
-          >
+    <div className="flex min-h-dvh flex-col bg-surface">
+      <header className="bg-gradient-to-br from-brand-900 to-brand-600 px-4 pt-10 pb-12 text-surface">
+        <div className="mx-auto flex max-w-3xl flex-col gap-4">
+          <span className="flex items-center gap-2 text-accent">
+            <Recycle aria-hidden="true" className="size-8" />
+          </span>
+          <h1 ref={titleRef} tabIndex={-1} className="text-4xl font-bold focus:outline-none">
             {t('app.name')}
           </h1>
-          <p className="text-lg text-mint">{t('home.tagline')}</p>
+          <p className="text-xl text-mint">{t('home.tagline')}</p>
+          <p className="max-w-2xl text-surface/90">{t('home.pitch')}</p>
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+            <Link
+              to={PATHS.report}
+              className="flex min-h-12 items-center justify-center gap-3 rounded-xl bg-accent px-5 font-bold text-ink"
+            >
+              <Camera aria-hidden="true" className="size-6" />
+              {t('home.report')}
+            </Link>
+            <Link
+              to={PATHS.demo}
+              className="flex min-h-12 items-center justify-center gap-3 rounded-xl border-2 border-surface px-5 font-bold text-surface"
+            >
+              <Users aria-hidden="true" className="size-6" />
+              {t('home.demoAccess')}
+            </Link>
+          </div>
+          <p className="text-sm text-mint">{t('home.reportHint')}</p>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
-        <Link
-          to={PATHS.report}
-          className="flex min-h-11 items-center gap-4 rounded-2xl bg-brand-600 p-5 text-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-900"
-        >
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-brand-900 text-accent">
-            <CameraIcon className="size-8" />
-          </span>
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="text-xl font-bold">{t('home.report')}</span>
-            <span className="text-base">{t('home.reportHint')}</span>
-          </span>
-        </Link>
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-4 py-10">
+        <section aria-labelledby="problem" className="flex flex-col gap-3">
+          <h2 id="problem" className="text-2xl font-bold text-brand-900">
+            {t('home.problem.title')}
+          </h2>
+          <p className="text-ink">{t('home.problem.body')}</p>
+        </section>
+
+        <section aria-labelledby="how" className="flex flex-col gap-4">
+          <h2 id="how" className="text-2xl font-bold text-brand-900">
+            {t('home.how.title')}
+          </h2>
+          <ol className="grid gap-3 sm:grid-cols-2">
+            {STEPS.map(({ key, Icon }, index) => (
+              <li key={key} className="flex gap-3 rounded-2xl border border-line p-4">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-mint text-brand-600">
+                  <Icon aria-hidden="true" className="size-6" />
+                </span>
+                <span className="flex flex-col">
+                  <span className="font-bold text-ink">
+                    {index + 1}. {t(`home.how.${key}.title`)}
+                  </span>
+                  <span className="text-sm text-muted">{t(`home.how.${key}.body`)}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="flex items-start gap-3 rounded-2xl bg-mint p-5">
+          <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-brand-600" />
+          <p className="text-ink">{t('home.promise')}</p>
+        </section>
       </main>
     </div>
   )

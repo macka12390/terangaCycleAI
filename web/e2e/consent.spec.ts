@@ -1,5 +1,5 @@
 // Story 1.7 : accueil, Identifiant d'appareil et consentement avant la première capture.
-// L'écran 2 · Capture lui-même (Position, Zone active) est vérifié par capture.spec.ts.
+// Le formulaire citoyen lui-même (photo, position, envoi) est vérifié par citizen.spec.ts.
 // Une ligne de la matrice I/O de la spec par test, en 390×844 sur la PWA construite.
 // Espions posés avant tout script de la page : géolocalisation, appareil photo, réseau.
 import { readFileSync } from 'node:fs'
@@ -23,7 +23,7 @@ interface Texts {
     saveError: string
     training: { label: string }
   }
-  capture: { title: string }
+  citizen: { title: string }
 }
 
 const fr = JSON.parse(
@@ -33,7 +33,7 @@ const fr = JSON.parse(
 const DB_NAME = 'terangacycle'
 const DEVICE_ID = /^[A-Za-z0-9_-]{43}$/
 const CONSENT_URL = /\/signaler\/consentement$/
-const CAPTURE_URL = /\/signaler\/capture$/
+const CAPTURE_URL = /\/citizen\/report$/
 const HOME_URL = /:\d+\/$/
 
 interface Watch {
@@ -168,7 +168,7 @@ async function expectConsentScreen(page: Page) {
 
 async function expectCaptureScreen(page: Page) {
   await expect(page).toHaveURL(CAPTURE_URL)
-  await expect(page.getByRole('heading', { level: 1, name: fr.capture.title })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: fr.citizen.title })).toBeVisible()
 }
 
 function reportRequests(watch: Watch): string[] {
@@ -281,9 +281,9 @@ test('acceptation sans la case : training = false, puis écran 2', async ({ page
   await expectCaptureScreen(page)
   await expectStoredConsent(page, false)
 
-  // L'écran 2 suit la Position (story 1.8), jamais avant l'acceptation ; pas d'appareil
-  // photo (story 1.9) ni de Signalement (story 1.11).
-  await expect.poll(() => watch.permissionCalls()).toContain('geolocation.watchPosition')
+  // Le formulaire demande la Position après l'acceptation, jamais avant ; pas d'appareil
+  // photo (ouvert seulement au toucher) ni de Signalement envoyé.
+  await expect.poll(() => watch.permissionCalls()).toContain('geolocation.getCurrentPosition')
   expect(await watch.permissionCalls()).not.toContain('mediaDevices.getUserMedia')
   expect(reportRequests(watch)).toEqual([])
 })

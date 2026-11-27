@@ -1,10 +1,13 @@
-// Les 5 Types de déchet (codes de l'API, ordre des classes du Modèle, AD-7). Libellés par
-// i18n (`waste.<code>`), couleurs par jetons provisoires `--color-waste-<code>` (theme.css).
-export const WASTE_TYPES = ['plastic', 'metal', 'glass', 'organic', 'mixed'] as const
+// Les 5 catégories de déchet du MVP (contrat d'API) : plastique, métal, papier et carton,
+// verre, organique. Libellés par i18n (`waste.<code>`), couleurs par jetons
+// `--color-waste-<code>` (theme.css).
+import { CATEGORIES, type Category } from '../../api/types.ts'
 
-export type WasteType = (typeof WASTE_TYPES)[number]
+export const WASTE_TYPES = CATEGORIES
 
-/** Toucher l'option déjà choisie la retire : le Type de déchet est facultatif. */
+export type WasteType = Category
+
+/** Toucher l'option déjà choisie la retire : la catégorie du citoyen est facultative. */
 export function toggleWasteType(current: WasteType | null, touched: WasteType): WasteType | null {
   return current === touched ? null : touched
 }

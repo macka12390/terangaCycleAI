@@ -66,7 +66,7 @@ export function ConsentPage() {
       return
     }
     requestPersistentStorage()
-    if (onScreen.current) void navigate(PATHS.capture, { replace: true })
+    if (onScreen.current) void navigate(PATHS.citizenReport, { replace: true })
   }
 
   function decline() {

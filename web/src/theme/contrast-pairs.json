@@ -29,6 +29,6 @@
   {"name": "waste-glass/mint (non-text)", "fg": "--color-waste-glass", "bg": "--color-mint", "kind": "non-text"},
   {"name": "waste-organic/surface (non-text)", "fg": "--color-waste-organic", "bg": "--color-surface", "kind": "non-text"},
   {"name": "waste-organic/mint (non-text)", "fg": "--color-waste-organic", "bg": "--color-mint", "kind": "non-text"},
-  {"name": "waste-mixed/surface (non-text)", "fg": "--color-waste-mixed", "bg": "--color-surface", "kind": "non-text"},
-  {"name": "waste-mixed/mint (non-text)", "fg": "--color-waste-mixed", "bg": "--color-mint", "kind": "non-text"}
+  {"name": "waste-paper/surface (non-text)", "fg": "--color-waste-paper", "bg": "--color-surface", "kind": "non-text"},
+  {"name": "waste-paper/mint (non-text)", "fg": "--color-waste-paper", "bg": "--color-mint", "kind": "non-text"}
 ]

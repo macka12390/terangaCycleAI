@@ -8,5 +8,5 @@ import { useCurrentConsent } from '../consent/useCurrentConsent.ts'
 export function ReportEntry() {
   const accepted = useCurrentConsent()
   if (accepted === undefined) return null
-  return <Navigate to={accepted ? PATHS.capture : PATHS.consent} replace />
+  return <Navigate to={accepted ? PATHS.citizenReport : PATHS.consent} replace />
 }

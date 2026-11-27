@@ -3,9 +3,35 @@
     "name": "TerangaCycle AI"
   },
   "home": {
-    "tagline": "Ensemble, gardons Dakar propre",
+    "tagline": "Du dépôt sauvage à la matière valorisée, en toute traçabilité",
+    "pitch": "TerangaCycle AI relie citoyens, collecteurs et gestionnaires : un dépôt signalé devient une mission de collecte, puis des kilogrammes vérifiés.",
     "report": "Signaler un dépôt",
-    "reportHint": "Photo et position en moins de 30 secondes"
+    "reportHint": "Photo et position en moins de 30 secondes",
+    "demoAccess": "Espaces de démonstration",
+    "problem": {
+      "title": "Le problème",
+      "body": "Les dépôts sauvages sont signalés tard et mal documentés ; les collectes et les quantités réellement valorisées sont difficiles à suivre, et les récupérateurs manquent de visibilité."
+    },
+    "how": {
+      "title": "Comment ça marche",
+      "report": {
+        "title": "Le citoyen signale",
+        "body": "Photo et position ; l'IA propose une catégorie."
+      },
+      "moderate": {
+        "title": "Un modérateur décide",
+        "body": "Il valide ou rejette : l'IA propose, l'humain décide."
+      },
+      "collect": {
+        "title": "Un collecteur intervient",
+        "body": "Il accepte la mission et prouve la collecte."
+      },
+      "measure": {
+        "title": "L'impact est mesuré",
+        "body": "Seuls les kilogrammes vérifiés comptent."
+      }
+    },
+    "promise": "Données hébergées et gouvernées au Sénégal, sans API d'IA étrangère obligatoire."
   },
   "consent": {
     "title": "Avant votre premier signalement",
@@ -140,9 +166,9 @@
   "waste": {
     "plastic": "Plastique",
     "metal": "Métal",
+    "paper": "Papier et carton",
     "glass": "Verre",
-    "organic": "Organique",
-    "mixed": "Mixte"
+    "organic": "Organique"
   },
   "confirmation": {
     "title": "Merci ! Votre signalement est bien arrivé.",
@@ -160,5 +186,260 @@
   "demo": {
     "label": "Données de démonstration",
     "banner": "Mode démonstration : les données affichées ne sont pas réelles."
+  },
+  "citizen": {
+    "back": "Retour",
+    "title": "Signaler un dépôt",
+    "subtitle": "Photographiez un dépôt sauvage : nous le confions au bon collecteur.",
+    "photo": {
+      "label": "Photo du dépôt"
+    },
+    "position": {
+      "label": "Votre position",
+      "denied": "La localisation est refusée. Autorisez-la pour ce site dans les réglages du navigateur, puis réessayez.",
+      "unavailable": "Votre position n'a pas pu être trouvée. Activez la localisation du téléphone, puis réessayez.",
+      "insecure": "Le navigateur bloque la position sur une adresse non sécurisée. Ouvrez l'application en HTTPS."
+    },
+    "category": {
+      "label": "Type de déchet",
+      "hint": "L'IA proposera une catégorie ; vous pouvez la choisir vous-même. La décision finale revient au modérateur."
+    },
+    "missing": {
+      "photo": "Ajoutez une photo du dépôt pour pouvoir envoyer.",
+      "position": "Votre position est nécessaire pour envoyer."
+    },
+    "errors": {
+      "network": "Envoi impossible pour l'instant. Votre saisie est gardée, réessayez.",
+      "photo": "La photo n'a pas pu être acceptée. Reprenez-la, puis renvoyez le signalement.",
+      "generic": "Le signalement n'a pas pu être enregistré. Vérifiez la photo et la position, puis réessayez."
+    },
+    "ai": {
+      "automatic": "Automatique",
+      "proposal": "Proposition de l'IA",
+      "confidence": "confiance {{value}} %",
+      "manual": "Aucune IA active : un modérateur choisira la catégorie.",
+      "analysing": "L'IA analyse la photo…",
+      "lowConfidence": "Confiance inférieure à 60 % : aucune catégorie n'est présélectionnée. Choisissez-la si vous la connaissez."
+    },
+    "success": {
+      "title": "Signalement envoyé !",
+      "body": "Merci. Un modérateur va le vérifier, puis le confier à un collecteur.",
+      "track": "Suivre mon signalement",
+      "new": "Faire un autre signalement"
+    },
+    "qr": {
+      "link": "QR code",
+      "title": "Signaler un dépôt",
+      "subtitle": "Scannez pour ouvrir le formulaire",
+      "noAccount": "Aucun compte nécessaire",
+      "alt": "QR code vers le formulaire de signalement",
+      "download": "Télécharger",
+      "share": "Partager",
+      "copied": "Lien copié",
+      "shareText": "Signalez un dépôt sauvage avec TerangaCycle AI",
+      "toReport": "Aller au formulaire"
+    },
+    "tracking": {
+      "back": "Nouveau signalement",
+      "title": "Suivi du signalement",
+      "loading": "Chargement…",
+      "notFound": "Aucun signalement ne porte ce numéro. Vérifiez-le.",
+      "status": "Statut :"
+    },
+    "status": {
+      "pending": "En attente de vérification",
+      "validated": "Validé, confié aux collecteurs",
+      "rejected": "Rejeté par la modération"
+    },
+    "offline": {
+      "title": "Gardé sur votre téléphone",
+      "body": "Pas de réseau pour l'instant. Votre signalement, photo comprise, sera envoyé automatiquement dès que le réseau revient.",
+      "pending_one": "{{count}} signalement en attente d'envoi",
+      "pending_other": "{{count}} signalements en attente d'envoi",
+      "sendNow": "Envoyer maintenant",
+      "sent": "Envoyé : {{numbers}}"
+    }
+  },
+  "common": {
+    "loading": "Chargement…"
+  },
+  "apiErrors": {
+    "network": "Le serveur ne répond pas. Vérifiez la connexion, puis réessayez.",
+    "generic": "L'opération n'a pas pu aboutir. Réessayez dans quelques instants.",
+    "VALIDATION_ERROR": "Certaines informations ne sont pas valides. Vérifiez-les, puis réessayez.",
+    "UNAUTHORIZED": "Votre session de démonstration a expiré. Choisissez à nouveau un compte.",
+    "FORBIDDEN": "Cet espace est réservé à un autre rôle.",
+    "COLLECTOR_NOT_VERIFIED": "Votre compte collecteur n'est pas encore vérifié : vous ne pouvez pas accepter de mission.",
+    "NOT_FOUND": "Élément introuvable. Actualisez la liste.",
+    "INVALID_TRANSITION": "Cette action n'est plus possible : le statut a changé. Actualisez la liste.",
+    "MISSION_ALREADY_TAKEN": "Cette mission vient d'être acceptée par un autre collecteur.",
+    "FILE_TOO_LARGE": "La photo est trop lourde (8 Mo au plus). Reprenez-la.",
+    "UNSUPPORTED_FILE": "Ce fichier n'est pas une photo JPEG, PNG ou WebP. Reprenez la photo.",
+    "INTERNAL_ERROR": "Un problème est survenu sur le serveur. Réessayez dans quelques instants."
+  },
+  "statuses": {
+    "report": {
+      "pending": "En attente",
+      "approved": "Validé",
+      "assigned": "Collecte en cours",
+      "collected": "Collecté",
+      "completed": "Terminé",
+      "rejected": "Rejeté"
+    },
+    "mission": {
+      "available": "Disponible",
+      "accepted": "Acceptée",
+      "completed": "Terminée",
+      "cancelled": "Annulée"
+    },
+    "proof": {
+      "pending": "À vérifier",
+      "verified": "Vérifiée",
+      "rejected": "Rejetée",
+      "disputed": "Contestée"
+    }
+  },
+  "demoLogin": {
+    "title": "Comptes de démonstration",
+    "intro": "Choisissez un rôle pour découvrir son espace. Ces comptes sont fictifs.",
+    "roles": {
+      "citizen": {
+        "title": "Citoyen",
+        "body": "Signaler un dépôt et suivre son traitement"
+      },
+      "collector": {
+        "title": "Collecteur vérifié",
+        "body": "Accepter des missions et prouver la collecte"
+      },
+      "admin": {
+        "title": "Administrateur",
+        "body": "Modérer, vérifier les preuves, suivre l'impact"
+      }
+    },
+    "verified": "Compte vérifié",
+    "notVerified": "Compte non vérifié : ne peut pas accepter de mission"
+  },
+  "admin": {
+    "nav": {
+      "label": "Console",
+      "dashboard": "Tableau de bord",
+      "reports": "Modération",
+      "missions": "Missions",
+      "proofs": "Preuves",
+      "map": "Carte"
+    },
+    "logout": "Quitter",
+    "dashboard": {
+      "title": "Impact",
+      "verifiedKg": "Kilogrammes vérifiés",
+      "reportsTotal": "Signalements",
+      "reportsPending": "En attente",
+      "reportsValidated": "Validés",
+      "reportsRejected": "Rejetés",
+      "missionsAvailable": "Missions disponibles",
+      "collectionsCompleted": "Collectes terminées",
+      "proofsPending": "Preuves à vérifier",
+      "kgByCategory": "Kilogrammes vérifiés par matière",
+      "collectionsByDay": "Collectes (kg par jour)",
+      "kg": "Kilogrammes",
+      "activity": "Dernières activités",
+      "noVerifiedKg": "Aucune collecte vérifiée pour l'instant.",
+      "noCollections": "Aucune collecte pour l'instant.",
+      "noActivity": "Aucune activité pour l'instant.",
+      "aiTitle": "Fiabilité de l'IA",
+      "aiNone": "Pas encore assez de signalements validés pour mesurer l'accord entre l'IA et la modération.",
+      "aiAgreement": "La proposition de l'IA correspond à la décision humaine dans {{rate}} % des cas ({{count}} signalements évalués).",
+      "activityLine": "{{entity}} {{number}} : {{status}}",
+      "entities": {
+        "report": "Signalement",
+        "mission": "Mission",
+        "proof": "Preuve"
+      }
+    },
+    "reports": {
+      "title": "Modération des signalements",
+      "empty": "Aucun signalement dans cette liste.",
+      "photoAlt": "Photo du signalement {{number}}",
+      "ai": "Proposition",
+      "manual": "Classification manuelle (aucun modèle)",
+      "citizenCategory": "Choix du citoyen",
+      "comment": "Commentaire",
+      "voice": "Message vocal",
+      "finalCategory": "Catégorie retenue",
+      "reason": "Motif du rejet",
+      "map": "Voir sur la carte",
+      "validate": "Valider",
+      "reject": "Rejeter",
+      "confirmReject": "Confirmer le rejet",
+      "reasonLabel": "Motif du rejet",
+      "reasonPlaceholder": "Ex. : pas un dépôt de déchets",
+      "needCategory": "Aucune catégorie connue : choisissez-la avant de valider.",
+      "correct": "Corriger la catégorie"
+    },
+    "missions": {
+      "title": "Missions",
+      "empty": "Aucune mission pour l'instant.",
+      "id": "Mission",
+      "category": "Matière",
+      "status": "Statut",
+      "collector": "Collecteur",
+      "created": "Créée",
+      "completed": "Terminée"
+    },
+    "proofs": {
+      "title": "Preuves de collecte",
+      "rule": "Les kilos ne comptent dans l'impact qu'après vérification. Une preuve contestée attend un arbitrage.",
+      "empty": "Aucune preuve dans cette liste.",
+      "before": "Avant",
+      "after": "Après la collecte",
+      "mission": "Mission #{{id}}",
+      "collector": "Collecteur : {{name}}",
+      "verify": "Vérifier",
+      "contest": "Contester",
+      "reject": "Rejeter",
+      "note": "Note pour le collecteur",
+      "reviewNote": "Note de vérification : {{note}}"
+    },
+    "map": {
+      "title": "Carte des signalements",
+      "label": "Carte des signalements autour de Dakar",
+      "legend": "Légende des statuts",
+      "tilesFailed": "Le fond de carte n'a pas pu être chargé (réseau). Les points restent affichés, et la liste ci-dessous donne les mêmes informations."
+    }
+  },
+  "collector": {
+    "title": "Missions",
+    "tabs": {
+      "available": "Disponibles",
+      "mine": "Mes missions"
+    },
+    "empty": {
+      "available": "Aucune mission disponible pour l'instant.",
+      "mine": "Vous n'avez pas encore de mission."
+    },
+    "notVerified": "Votre compte n'est pas vérifié : vous pouvez consulter les missions, pas les accepter.",
+    "photoAlt": "Photo du dépôt {{id}}",
+    "created": "Signalé le {{date}}",
+    "route": "Itinéraire",
+    "accept": "Accepter la mission",
+    "open": "Ouvrir",
+    "back": "Missions",
+    "mission": "Mission {{id}}",
+    "proof": {
+      "title": "Preuve de collecte",
+      "photo": "Photo après la collecte",
+      "afterAlt": "Photo après la collecte",
+      "weight": "Poids récupéré (kg)",
+      "weightInvalid": "Saisissez un poids positif, par exemple 42,5.",
+      "comment": "Commentaire",
+      "send": "Envoyer la preuve",
+      "sent": "Preuve envoyée : l'administrateur va la vérifier.",
+      "rejected": "Votre preuve précédente a été rejetée : {{note}}. Envoyez une nouvelle preuve.",
+      "verified": "Collecte vérifiée : les kilos sont comptés dans l'impact."
+    }
+  },
+  "photoPicker": {
+    "camera": "Prendre une photo",
+    "gallery": "Importer une photo"
   }
 }

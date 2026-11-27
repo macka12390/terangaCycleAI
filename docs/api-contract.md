@@ -53,6 +53,9 @@ Erreur (toujours ce format, message en français lisible par l'utilisateur) :
 | 409 | `NAME_TAKEN` | Une organisation porte déjà ce nom |
 | 409 | `INSUFFICIENT_STOCK` | Lot plus lourd que le stock vérifié (`details.available_kg`) |
 | 409 | `LOT_ALREADY_RESERVED` | Lot déjà réservé par un autre recycleur |
+| 409 | `PAYMENT_IN_PROGRESS` | Paiement déjà en cours ou effectué (pas de double versement) |
+| 409 | `LOT_ALREADY_PAID` | Ce lot est déjà payé |
+| 409 | `LOT_PRICE_MISSING` | Lot sans prix : paiement à régler hors de l'application |
 | 404 | `NOT_FOUND` | Ressource ou route inconnue |
 | 409 | `INVALID_TRANSITION` | Le statut actuel ne permet pas l'opération |
 | 409 | `MISSION_ALREADY_TAKEN` | Mission déjà acceptée par un autre collecteur |
@@ -530,6 +533,41 @@ Cycle : `available` → `reserved` (un recycleur, atomique) → `handed_over` (r
 - **Contact** : `collector.phone` n'apparaît que pour le recycleur qui a réservé, le collecteur et les admins (`contact_visible`) ; `recycler.phone` seulement pour le collecteur et ce recycleur.
 - SMS au collecteur quand son lot est réservé, et à l'autre partie quand une réservation est annulée.
 - Statistiques : `stats.marketplace` = `{ counts, available_kg, reserved_kg, handed_over_kg, handed_over_by_category }` (`handed_over_kg` : matière effectivement remise aux recycleurs).
+
+### Paiements mobile money (étape 6)
+
+**Mode simulé** par défaut (`PAYMENT_PROVIDER=simulated`) : **aucun argent ne bouge**. Chaque paiement porte `is_simulated: true` et une référence `SIM-…` ; le SMS au collecteur précise « Paiement simulé ». Un vrai fournisseur (Wave, Orange Money) se branche dans `api/app/payments_provider/` ; ses clés vont dans `.env`, jamais dans Git.
+
+**Deux flux :**
+1. **Rémunération des collecteurs** : chaque organisation fixe un tarif par matière (FCFA par kilo vérifié). Quand une preuve est vérifiée, une rémunération `pending` (« À payer ») est créée : kilos × tarif. Une seule par preuve. L'admin la verse (une par une ou « Tout payer »).
+2. **Paiement d'un lot** : le recycleur qui a réservé un lot **avec prix** le paie (prix × kilos), une seule fois.
+
+Cycle : `pending` → `processing` → `succeeded` | `failed` (un échec se relance). Le passage à `processing` est atomique : un double clic reçoit 409 `PAYMENT_IN_PROGRESS`.
+
+| Méthode | Route | Accès | Corps | Réponse |
+|---|---|---|---|---|
+| GET | `/api/tariffs` | 🛡️ (super admin : `?organisation_id=`) | — | `{ success, organisation_id, tariffs: { plastic: 100, metal: null, … } }` |
+| PUT | `/api/tariffs` | 🛡️ | `{ category, price_per_kg, organisation_id? }` | `{ success, organisation_id, tariffs }` |
+| GET | `/api/payments` | 🛡️ (son organisation) · 🚛 (reçus) · recycleur (payés) | — | `{ success, payments: [payment], summary, provider }` |
+| POST | `/api/payments/<id>/pay` | 🛡️ | — | `{ success, payment, provider }` |
+| POST | `/api/payments/rewards/pay-all` | 🛡️ | `{ organisation_id? }` | `{ success, result: { succeeded, failed, amount_fcfa }, provider }` |
+| POST | `/api/payments/rewards/accrue` | 🛡️ | `{ organisation_id? }` | `{ success, created }` (preuves vérifiées avant la fixation du tarif) |
+| POST | `/api/lots/<id>/pay` | recycleur qui a réservé | — | `{ success, payment, provider }` |
+
+```json
+{ "id": 4, "kind": "collector_reward", "kind_label": "Rémunération", "status": "succeeded", "status_label": "Payé",
+  "amount_fcfa": 2350, "weight_kg": 23.5, "price_per_kg": 100, "category": "plastic", "category_label": "Plastique",
+  "payee": { "id": 8, "name": "Moussa" }, "payer": null,
+  "organisation": { "id": 1, "name": "Organisation principale (Dakar)", "is_demo": false },
+  "tracking_number": "TC-2026-…", "lot_id": null, "provider": "simulated", "is_simulated": true,
+  "provider_ref": "SIM-3F9A1C2B7E00", "failure_reason": null, "attempts": 1, "created_at": "…", "completed_at": "…" }
+```
+
+- `summary` : `{ rewards_paid_fcfa, rewards_due_fcfa, lot_payments_fcfa }` pour la personne connectée (ou l'organisation pour un admin).
+- `provider` : `{ name, simulated }` — afficher un bandeau « paiements simulés » tant que `simulated` vaut `true`.
+- Un collecteur suspendu n'est pas payé (409 `ACCOUNT_SUSPENDED`), et « Tout payer » le saute.
+- Lot : `lot.payment` = `{ id, status, status_label, amount_fcfa, is_simulated }` ou `null`.
+- Statistiques : `stats.payments` = `{ rewards_paid_fcfa, rewards_due_fcfa, lot_payments_fcfa, simulated }`.
 
 ### Photos
 

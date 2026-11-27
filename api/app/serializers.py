@@ -53,6 +53,7 @@ AUDIT_ACTION_LABELS = {
     "organisation.create": "Organisation créée",
     "organisation.update": "Organisation modifiée",
     "report.reassign": "Signalement rattaché à une organisation",
+    "tariff.update": "Tarif de rémunération modifié",
 }
 
 
@@ -280,4 +281,59 @@ def lot_to_dict(lot, viewer) -> dict:
         "created_at": iso(lot.created_at),
         # Seulement pour le recycleur qui a réservé, le collecteur et les admins.
         "contact_visible": contact,
+        "payment": _lot_payment_summary(lot),
+    }
+
+
+def _lot_payment_summary(lot) -> dict | None:
+    from app.services.payments import lot_payment
+
+    payment = lot_payment(lot)
+    if payment is None:
+        return None
+    return {
+        "id": payment.id,
+        "status": payment.status,
+        "status_label": PAYMENT_STATUS_LABELS[payment.status],
+        "amount_fcfa": payment.amount_fcfa,
+        "is_simulated": payment.is_simulated,
+    }
+
+
+PAYMENT_STATUS_LABELS = {
+    "pending": "À payer",
+    "processing": "En cours",
+    "succeeded": "Payé",
+    "failed": "Échec",
+}
+PAYMENT_KIND_LABELS = {"collector_reward": "Rémunération", "lot_payment": "Paiement d'un lot"}
+
+
+def payment_to_dict(payment) -> dict:
+    tracking = None
+    if payment.proof is not None:
+        tracking = payment.proof.mission.report.tracking_number
+    return {
+        "id": payment.id,
+        "kind": payment.kind,
+        "kind_label": PAYMENT_KIND_LABELS[payment.kind],
+        "status": payment.status,
+        "status_label": PAYMENT_STATUS_LABELS[payment.status],
+        "amount_fcfa": payment.amount_fcfa,
+        "weight_kg": payment.weight_kg,
+        "price_per_kg": payment.price_per_kg,
+        "category": payment.category,
+        "category_label": CATEGORIES_LABELS.get(payment.category, payment.category),
+        "payee": user_summary(payment.payee),
+        "payer": user_summary(payment.payer),
+        "organisation": organisation_summary(payment.organisation),
+        "tracking_number": tracking,
+        "lot_id": payment.lot_id,
+        "provider": payment.provider,
+        "is_simulated": payment.is_simulated,
+        "provider_ref": payment.provider_ref,
+        "failure_reason": payment.failure_reason,
+        "attempts": payment.attempts,
+        "created_at": iso(payment.created_at),
+        "completed_at": iso(payment.completed_at),
     }

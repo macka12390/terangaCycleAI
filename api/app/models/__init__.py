@@ -7,6 +7,7 @@ from app.models.mission import Mission
 from app.models.notification import Notification
 from app.models.organisation import Organisation
 from app.models.otp import OtpChallenge
+from app.models.payment import Payment, Tariff
 from app.models.proof import CollectionProof
 from app.models.report import Report
 from app.models.user import User
@@ -19,7 +20,9 @@ __all__ = [
     "Notification",
     "Organisation",
     "OtpChallenge",
+    "Payment",
     "Report",
     "StatusEvent",
+    "Tariff",
     "User",
 ]

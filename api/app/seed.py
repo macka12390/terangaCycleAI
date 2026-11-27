@@ -15,7 +15,17 @@ from werkzeug.datastructures import FileStorage
 
 from app.constants import CATEGORIES, AiMode
 from app.extensions import db
-from app.models import CollectionProof, Lot, Mission, Notification, Report, StatusEvent, User
+from app.models import (
+    CollectionProof,
+    Lot,
+    Mission,
+    Notification,
+    Payment,
+    Report,
+    StatusEvent,
+    Tariff,
+    User,
+)
 from app.services import missions as mission_service
 from app.services import proofs as proof_service
 from app.services import reports as report_service
@@ -28,6 +38,9 @@ COLORS = {
     "glass": (13, 148, 136),
     "organic": (22, 101, 52),
 }
+
+# Tarifs de démonstration (FCFA par kilo vérifié), organisation principale.
+DEMO_TARIFFS = {"plastic": 100, "metal": 150, "paper": 50, "glass": 40, "organic": 20}
 
 # (quartier, latitude, longitude, catégorie, étape finale, poids kg, jours écoulés)
 DEMO_SITES = (
@@ -110,6 +123,15 @@ def _shift_back(report: Report, days: int) -> None:
 def seed_demo() -> int:
     if Report.query.filter_by(is_demo=True).first() is not None:
         return 0
+    # Tarifs de rémunération de l'organisation principale (FCFA par kilo vérifié).
+    from app.services.organisations import ensure_default_organisation
+
+    default_org = ensure_default_organisation()
+    for category, price in DEMO_TARIFFS.items():
+        if Tariff.query.filter_by(organisation_id=default_org.id, category=category).first() is None:
+            db.session.add(Tariff(organisation_id=default_org.id, category=category, price_per_kg=price))
+    db.session.commit()
+
     citizen = _user("citoyen-demo")
     # Le super admin modère toutes les organisations ; le collecteur de démo n'intervient
     # que dans l'organisation principale.
@@ -175,12 +197,22 @@ def seed_demo() -> int:
     lot_service.reserve(metal.id, recycler)
     lot_service.create_lot(collector, {"category": "plastic", "weight_kg": 40, "price_per_kg": 150,
                                        "description": "[DÉMO] Bouteilles PET triées"})
+
+    # Paiements (simulés) : le recycleur paie le lot de papier ; la rémunération de la
+    # collecte la plus ancienne est versée, les autres restent « à payer ».
+    from app.services import payments as payment_service
+
+    payment_service.pay_lot(paper.id, recycler)
+    oldest = Payment.query.filter_by(kind="collector_reward").order_by(Payment.id).first()
+    if oldest is not None:
+        payment_service.pay(oldest.id, admin)
     return len(DEMO_SITES)
 
 
 def clear_demo() -> int:
     reports = Report.query.filter_by(is_demo=True).all()
     demo_collectors = [u.id for u in User.query.filter(User.demo_login.isnot(None), User.role == "collector")]
+    Payment.query.filter(Payment.payee_id.in_(demo_collectors)).delete(synchronize_session=False)
     Lot.query.filter(Lot.collector_id.in_(demo_collectors)).delete(synchronize_session=False)
     for report in reports:
         StatusEvent.query.filter_by(report_id=report.id).delete()

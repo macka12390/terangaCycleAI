@@ -30,8 +30,11 @@ def _counts(rows, keys) -> dict[str, int]:
     return {key: int(found.get(key, 0)) for key in keys}
 
 
-def compute_stats(include_demo: bool = True) -> dict:
+def compute_stats(include_demo: bool = True, organisation_id: int | None = None) -> dict:
+    """`organisation_id` None : toutes les organisations (super admin) ; sinon une seule."""
     demo_filter = [] if include_demo else [Report.is_demo.is_(False)]
+    if organisation_id is not None:
+        demo_filter.append(Report.organisation_id == organisation_id)
 
     report_counts = _counts(
         db.session.query(Report.status, func.count(Report.id))
@@ -125,10 +128,11 @@ def compute_stats(include_demo: bool = True) -> dict:
         ],
         "recent_activity": _recent_activity(demo_filter),
         "ai": _ai_stats(reports),
+        "organisation_id": organisation_id,
         "demo": {
             "included": include_demo,
             "demo_reports": db.session.query(func.count(Report.id))
-            .filter(Report.is_demo.is_(True))
+            .filter(Report.is_demo.is_(True), *demo_filter)
             .scalar(),
         },
     }

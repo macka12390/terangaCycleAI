@@ -8,6 +8,7 @@ Une base créée avec une version précédente planterait donc (« no such colum
 """
 
 import logging
+from collections.abc import Callable
 
 from sqlalchemy import Table
 from sqlalchemy.engine import Connection
@@ -19,7 +20,10 @@ log = logging.getLogger(__name__)
 
 # table → {colonne: définition SQL} ; uniquement des colonnes facultatives (NULL permis).
 ADDED_COLUMNS: dict[str, dict[str, str]] = {
-    "reports": {"voice_path": "VARCHAR(255)"},
+    "reports": {
+        "voice_path": "VARCHAR(255)",
+        "organisation_id": "INTEGER REFERENCES organisations(id)",
+    },
 }
 
 # Tables reconstruites si leur structure diffère du modèle (colonne manquante ou
@@ -92,3 +96,24 @@ def upgrade_schema() -> list[str]:
         finally:
             connection.exec_driver_sql("PRAGMA foreign_keys=ON")
     return changes
+
+
+def run_data_migrations(migrations: dict[int, Callable[[], None]]) -> list[int]:
+    """Migrations de données, une seule fois chacune, suivies par PRAGMA user_version.
+
+    `migrations` : {version: fonction}. Chaque fonction travaille avec la session ORM et
+    valide elle-même ; la version n'avance qu'après son succès.
+    """
+    if db.engine.dialect.name != "sqlite":
+        return []
+    with db.engine.connect() as connection:
+        current = connection.exec_driver_sql("PRAGMA user_version").scalar() or 0
+    applied = []
+    for version in sorted(migrations):
+        if current < version:
+            migrations[version]()
+            with db.engine.connect() as connection:
+                connection.exec_driver_sql(f"PRAGMA user_version = {int(version)}")
+                connection.commit()
+            applied.append(version)
+    return applied

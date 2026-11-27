@@ -17,6 +17,13 @@ from app.constants import (
 from app.extensions import db
 from app.models import Mission, Report, StatusEvent, User
 from app.services.auth import is_admin
+from app.services.organisations import (
+    ensure_report_in_scope,
+    report_scope,
+    scoped_organisation_id,
+    sees_all,
+)
+from app.services.organisations import resolve as resolve_organisation
 from app.services.events import record_event, transition
 from app.utils.errors import forbidden, invalid_transition, not_found, validation_error
 from app.utils.audio import read_voice, store_voice
@@ -73,6 +80,7 @@ def create_report(
     prediction = get_ai().classify(processed.image, processed.source_sha256)
     photo_path = store_image(processed, "reports")
     voice_path = store_voice(voice) if voice else None
+    organisation = resolve_organisation(latitude, longitude)
 
     try:
         now = utcnow()
@@ -92,6 +100,7 @@ def create_report(
             citizen_category=citizen_category,
             status=ReportStatus.PENDING,
             user_id=user.id if user else None,
+            organisation_id=organisation.id if organisation else None,
             created_at=now,
             updated_at=now,
         )
@@ -127,7 +136,17 @@ def list_reports(user: User, args: Mapping) -> tuple[list[Report], int]:
     query = Report.query
     if user.role == "citizen":
         query = query.filter(Report.user_id == user.id)
-    elif not is_admin(user):
+    elif is_admin(user):
+        query = query.filter(*report_scope(user))
+        organisation = args.get("organisation_id")
+        if sees_all(user) and organisation:
+            if organisation == "none":
+                query = query.filter(Report.organisation_id.is_(None))
+            else:
+                query = query.filter(
+                    Report.organisation_id == scoped_organisation_id(user, organisation)
+                )
+    else:
         raise forbidden()
 
     status = args.get("status")
@@ -155,7 +174,9 @@ def get_report(report_id: int) -> Report:
 
 def get_report_for(user: User, report_id: int) -> Report:
     report = get_report(report_id)
-    if not is_admin(user) and report.user_id != user.id:
+    if is_admin(user):
+        ensure_report_in_scope(user, report)
+    elif report.user_id != user.id:
         raise forbidden("Ce signalement ne vous appartient pas.")
     return report
 
@@ -196,6 +217,7 @@ def track(tracking_number: str) -> dict:
 def moderate(report_id: int, admin: User, data: Mapping) -> tuple[Report, Mission | None]:
     action = parse_choice(data, "action", ("approve", "reject", "correct"))
     report = get_report(report_id)
+    ensure_report_in_scope(admin, report)
     if action == "approve":
         return _approve(report, admin, data)
     if action == "reject":

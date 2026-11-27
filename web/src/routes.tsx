@@ -21,6 +21,7 @@ import {
   AdminLayout,
   AdminMapPage,
   AdminMissionsPage,
+  AdminOrganisationsPage,
   AdminProofsPage,
   AdminReportsPage,
 } from './features/admin/lazyPages.tsx'
@@ -72,6 +73,7 @@ export const routes: RouteObject[] = [
           { path: PATHS.adminProofs, element: <AdminProofsPage /> },
           { path: PATHS.adminMap, element: <AdminMapPage /> },
           { path: PATHS.adminAccounts, element: <AdminAccountsPage /> },
+          { path: PATHS.adminOrganisations, element: <AdminOrganisationsPage /> },
         ],
       },
       { path: '*', element: <NotFoundPage /> },

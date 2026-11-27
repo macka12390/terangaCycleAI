@@ -48,6 +48,8 @@ Pour la photo « après collecte », prendre une vraie photo d'un sol propre le 
 | 7 | Admin | Preuves → vérifier | Tableau de bord : les kilos apparaissent dans « Plastique » ; frise et carte à jour |
 | 8 | Citoyen | Ouvrir le suivi du numéro | « Terminé — kilos vérifiés » |
 
+Multi-organisations (30 s, si le jury demande « et pour plusieurs communes ? ») : se connecter en **Admin UCG Pikine (démo)** — il ne voit que les dépôts de Pikine et Guédiawaye, pas ceux de Dakar ; puis en **Super Admin Démo** → Organisations : chaque structure a sa zone, un dépôt va automatiquement à la plus précise.
+
 Variante si le temps le permet : signaler `2-plastique-hesitant.jpg` pour montrer que sous 60 % de confiance, l'IA ne décide rien à la place de l'humain.
 
 Pour basculer de rôle : accueil → **Espaces de démonstration** → choisir le compte.

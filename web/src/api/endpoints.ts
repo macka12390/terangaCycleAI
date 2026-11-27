@@ -13,7 +13,10 @@ import type {
   Tracking,
   User,
   AuditEntry,
+  Organisation,
+  OrganisationKind,
   Role,
+  Zone,
 } from './types.ts'
 
 // --- Configuration ------------------------------------------------------------------------
@@ -114,8 +117,13 @@ export async function createReport(report: NewReport): Promise<CreatedReport> {
   return { report: created, ai: ai ?? null, duplicate: duplicate === true }
 }
 
-export async function listReports(status?: ReportStatus): Promise<Report[]> {
-  return (await http.get('/reports', { params: { status, limit: 200 } })).data.reports
+/** `organisationId` (super admin) : un id, ou `'none'` pour les signalements hors zone. */
+export async function listReports(
+  status?: ReportStatus,
+  organisationId?: number | 'none',
+): Promise<Report[]> {
+  const params = { status, organisation_id: organisationId, limit: 200 }
+  return (await http.get('/reports', { params })).data.reports
 }
 
 /** Suivi public par numéro : statut et historique, sans photo ni position. */
@@ -179,8 +187,9 @@ export async function verifyProof(
 
 // --- Tableau de bord ------------------------------------------------------------------------
 
-export async function dashboardStats(): Promise<DashboardStats> {
-  return (await http.get('/dashboard/stats')).data.stats
+export async function dashboardStats(organisationId?: number): Promise<DashboardStats> {
+  const params = organisationId ? { organisation_id: organisationId } : {}
+  return (await http.get('/dashboard/stats', { params })).data.stats
 }
 
 // --- Comptes (étape 2 : admin et super admin) ----------------------------------------------
@@ -209,6 +218,8 @@ export interface NewAccount {
   name: string
   role: Role
   is_verified: boolean
+  /** Super admin, pour un admin ou un collecteur : organisation du compte. */
+  organisation_id?: number
 }
 
 export async function createAccount(account: NewAccount): Promise<User> {
@@ -217,7 +228,7 @@ export async function createAccount(account: NewAccount): Promise<User> {
 
 export async function updateAccount(
   id: number,
-  changes: Partial<Pick<User, 'name' | 'role' | 'is_verified'>>,
+  changes: Partial<Pick<User, 'name' | 'role' | 'is_verified'>> & { organisation_id?: number },
 ): Promise<User> {
   return (await http.patch(`/accounts/${id}`, changes)).data.account
 }
@@ -236,4 +247,41 @@ export async function reactivateAccount(id: number): Promise<User> {
 
 export async function listAudit(): Promise<AuditEntry[]> {
   return (await http.get('/audit', { params: { limit: 50 } })).data.entries
+}
+
+// --- Organisations (étape 3) ---------------------------------------------------------------
+
+export interface OrganisationList {
+  organisations: Organisation[]
+  /** Super admin : signalements hors de toute zone, à rattacher. */
+  unassignedReports: number | null
+}
+
+export async function listOrganisations(): Promise<OrganisationList> {
+  const body = (await http.get('/organisations')).data
+  return {
+    organisations: body.organisations,
+    unassignedReports: typeof body.unassigned_reports === 'number' ? body.unassigned_reports : null,
+  }
+}
+
+export interface OrganisationInput extends Zone {
+  name: string
+  kind: OrganisationKind
+}
+
+export async function createOrganisation(input: OrganisationInput): Promise<Organisation> {
+  return (await http.post('/organisations', input)).data.organisation
+}
+
+export async function updateOrganisation(
+  id: number,
+  changes: Partial<OrganisationInput> & { is_active?: boolean },
+): Promise<Organisation> {
+  return (await http.patch(`/organisations/${id}`, changes)).data.organisation
+}
+
+export async function reassignReport(reportId: number, organisationId: number): Promise<Report> {
+  return (await http.patch(`/reports/${reportId}/organisation`, { organisation_id: organisationId })).data
+    .report
 }

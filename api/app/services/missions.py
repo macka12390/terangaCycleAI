@@ -14,6 +14,7 @@ from app.constants import (
 from app.extensions import db
 from app.models import CollectionProof, Mission, Report, User
 from app.services.auth import is_admin
+from app.services.organisations import ensure_report_in_scope, report_scope
 from app.services.events import record_event, transition
 from app.utils.errors import ApiError, forbidden, invalid_transition, not_found, validation_error
 from app.utils.images import delete_image, read_photo, store_image
@@ -22,16 +23,18 @@ from app.utils.validation import parse_float, parse_pagination, parse_text
 
 
 def list_missions(user: User, args: Mapping) -> list[Mission]:
-    query = Mission.query
+    query = Mission.query.join(Report, Mission.report_id == Report.id)
     if user.role == "collector":
         scope = (args.get("scope") or "available").strip().lower()
         if scope == "available":
-            query = query.filter(Mission.status == MissionStatus.AVAILABLE)
+            # Seules les missions de son organisation.
+            query = query.filter(Mission.status == MissionStatus.AVAILABLE, *report_scope(user))
         elif scope == "mine":
             query = query.filter(Mission.collector_id == user.id)
         else:
             raise validation_error("« scope » doit valoir available ou mine.", "scope")
     elif is_admin(user):
+        query = query.filter(*report_scope(user))
         status = args.get("status")
         if status:
             if status not in MISSION_STATUS_LABELS:
@@ -53,14 +56,19 @@ def get_mission(mission_id: int) -> Mission:
 def get_mission_for(user: User, mission_id: int) -> Mission:
     mission = get_mission(mission_id)
     if user.role == "collector":
-        visible = mission.status == MissionStatus.AVAILABLE or mission.collector_id == user.id
-        if not visible:
+        if mission.collector_id == user.id:
+            return mission
+        if mission.status != MissionStatus.AVAILABLE:
             raise forbidden("Cette mission est attribuée à un autre collecteur.")
+        ensure_report_in_scope(user, mission.report)
+    else:
+        ensure_report_in_scope(user, mission.report)
     return mission
 
 
 def accept(mission_id: int, collector: User) -> Mission:
     mission = get_mission(mission_id)
+    ensure_report_in_scope(collector, mission.report)
     if not collector.is_verified:
         raise ApiError(
             403,
@@ -201,7 +209,9 @@ def release(mission_id: int, user: User, data: Mapping) -> Mission:
     Le collecteur titulaire (acceptée par erreur, empêchement) ou un admin (mission bloquée).
     """
     mission = get_mission(mission_id)
-    if not is_admin(user):
+    if is_admin(user):
+        ensure_report_in_scope(user, mission.report)
+    else:
         _ensure_owner(mission, user)
     _release(mission, user, parse_text(data, "reason"))
     db.session.commit()
@@ -228,6 +238,7 @@ def cancel(mission_id: int, admin: User, data: Mapping) -> Mission:
     Impossible une fois la preuve envoyée : vérifier ou rejeter la preuve d'abord.
     """
     mission = get_mission(mission_id)
+    ensure_report_in_scope(admin, mission.report)
     reason = parse_text(data, "reason")
     previous = mission.status
     report_previous = mission.report.status

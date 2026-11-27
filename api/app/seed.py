@@ -34,9 +34,10 @@ DEMO_SITES = (
     ("Médina", 14.6845, -17.4530, "plastic", "verified", 42.5, 6),
     ("Grand Yoff", 14.7362, -17.4610, "metal", "verified", 18.0, 4),
     ("Parcelles Assainies", 14.7660, -17.4430, "paper", "verified", 25.0, 2),
-    ("Pikine", 14.7540, -17.3920, "organic", "proof", 30.0, 1),
-    ("HLM", 14.7115, -17.4450, "glass", "accepted", None, 1),
-    ("Ouakam", 14.7240, -17.4900, "plastic", "approved", None, 0),
+    ("HLM", 14.7115, -17.4450, "glass", "proof", 30.0, 1),
+    ("Ouakam", 14.7240, -17.4900, "plastic", "accepted", None, 1),
+    # Pikine et Guédiawaye : zone de l'UCG Pikine-Guédiawaye (démo), autre organisation.
+    ("Pikine", 14.7540, -17.3920, "organic", "approved", None, 0),
     ("Yoff", 14.7560, -17.4840, "plastic", "pending", None, 0),
     ("Guédiawaye", 14.7790, -17.3960, "organic", "pending", None, 0),
     ("Liberté 6", 14.7270, -17.4630, None, "pending", None, 0),
@@ -110,7 +111,9 @@ def seed_demo() -> int:
     if Report.query.filter_by(is_demo=True).first() is not None:
         return 0
     citizen = _user("citoyen-demo")
-    admin = _user("admin-demo")
+    # Le super admin modère toutes les organisations ; le collecteur de démo n'intervient
+    # que dans l'organisation principale.
+    admin = _user("superadmin-demo")
     collector = _user("collecteur-demo")
 
     for district, lat, lng, category, stage, weight, days in DEMO_SITES:

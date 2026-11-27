@@ -1,16 +1,17 @@
-import { Check, MapPin, Pencil, X } from 'lucide-react'
+import { Building2, Check, MapPin, Pencil, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { listReports, moderateReport } from '../../api/endpoints.ts'
+import { listOrganisations, listReports, moderateReport, reassignReport } from '../../api/endpoints.ts'
 import { errorCode } from '../../api/http.ts'
-import type { Report, ReportStatus } from '../../api/types.ts'
+import type { Organisation, Report, ReportStatus } from '../../api/types.ts'
 import { DemoTag, Empty, ErrorMessage, Loading, StatusBadge } from '../../ui/common.tsx'
 import { formatDate, mapLink, useLoad } from '../../ui/load.ts'
 import { AiPanel } from '../classify/AiPanel.tsx'
 import { WasteTypeBadge, WasteTypePicker } from '../classify/WasteTypePicker.tsx'
 import type { WasteType } from '../classify/wasteTypes.ts'
-import { canCorrect, suggestedCategory } from './moderation.ts'
+import { getUser } from '../session/session.ts'
+import { canCorrect, canReassign, suggestedCategory } from './moderation.ts'
 
 // Modération (§3.4) : file des signalements, photo, position, proposition de l'IA avec son
 // libellé, commentaire. En attente : approuver (crée la mission) ou rejeter (motif
@@ -18,8 +19,20 @@ import { canCorrect, suggestedCategory } from './moderation.ts'
 // Le backend refuse toute transition incohérente (409 INVALID_TRANSITION).
 
 const FILTERS: ReportStatus[] = ['pending', 'approved', 'assigned', 'collected', 'completed', 'rejected']
+/** Onglet du super admin : dépôts hors de toute zone, à rattacher. */
+const UNASSIGNED = 'unassigned'
+type Filter = ReportStatus | typeof UNASSIGNED
 
-function ReportCard({ report, onDone }: { report: Report; onDone: () => void }) {
+function ReportCard({
+  report,
+  organisations,
+  onDone,
+}: {
+  report: Report
+  /** Super admin seulement : organisations proposées au rattachement. */
+  organisations: Organisation[] | null
+  onDone: () => void
+}) {
   const { t } = useTranslation()
   const [category, setCategory] = useState<WasteType | null>(suggestedCategory(report))
   const [rejecting, setRejecting] = useState(false)
@@ -55,7 +68,56 @@ function ReportCard({ report, onDone }: { report: Report; onDone: () => void }) 
           <StatusBadge kind="report" status={report.status} label={report.status_label} />
           {report.is_demo && <DemoTag />}
           <span className="text-sm text-muted">{formatDate(report.created_at)}</span>
+          {report.organisation ? (
+            <span className="flex items-center gap-1 text-sm text-muted">
+              <Building2 aria-hidden="true" className="size-4" />
+              {report.organisation.name}
+            </span>
+          ) : (
+            organisations && (
+              <span className="rounded-full bg-warning-bg px-2 py-0.5 text-xs font-bold text-warning-ink">
+                {t('admin.reports.unassigned')}
+              </span>
+            )
+          )}
         </div>
+
+        {report.voice_url && (
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-muted">{t('admin.reports.voice')}</span>
+            <audio controls preload="none" src={report.voice_url} className="w-full max-w-md" />
+          </div>
+        )}
+
+        {organisations && canReassign(report) && (
+          <label className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink">
+            {report.organisation ? t('admin.reports.reassign') : t('admin.reports.unassignedHint')}
+            <select
+              value=""
+              disabled={busy}
+              onChange={(event) => {
+                const target = Number(event.target.value)
+                if (!target) return
+                setBusy(true)
+                setFailure(null)
+                reassignReport(report.id, target).then(onDone, (error: unknown) => {
+                  setFailure(errorCode(error))
+                  setBusy(false)
+                })
+              }}
+              className="min-h-11 rounded-xl border-2 border-line bg-surface px-3 font-normal"
+            >
+              <option value="">{t('admin.reports.reassignChoose')}</option>
+              {organisations
+                .filter((organisation) => organisation.is_active && organisation.id !== report.organisation?.id)
+                .map((organisation) => (
+                  <option key={organisation.id} value={organisation.id}>
+                    {organisation.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+        )}
 
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
@@ -171,8 +233,17 @@ function ReportCard({ report, onDone }: { report: Report; onDone: () => void }) 
 
 export function AdminReportsPage() {
   const { t } = useTranslation()
-  const [filter, setFilter] = useState<ReportStatus>('pending')
-  const { load, reload } = useLoad(() => listReports(filter), [filter])
+  const isSuperadmin = getUser()?.role === 'superadmin'
+  const [filter, setFilter] = useState<Filter>('pending')
+  const { load, reload } = useLoad(
+    () => (filter === UNASSIGNED ? listReports(undefined, 'none') : listReports(filter)),
+    [filter],
+  )
+  const organisations = useLoad(
+    () => (isSuperadmin ? listOrganisations().then((list) => list.organisations) : Promise.resolve(null)),
+    [isSuperadmin],
+  ).load
+  const choices = organisations.state === 'ready' ? organisations.data : null
 
   return (
     <div className="flex flex-col gap-5">
@@ -192,6 +263,19 @@ export function AdminReportsPage() {
             {t(`statuses.report.${status}`)}
           </button>
         ))}
+        {isSuperadmin && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={filter === UNASSIGNED}
+            onClick={() => setFilter(UNASSIGNED)}
+            className={`min-h-11 rounded-full px-4 font-semibold ${
+              filter === UNASSIGNED ? 'bg-brand-600 text-surface' : 'border-2 border-warning-ink text-ink'
+            }`}
+          >
+            {t('admin.reports.unassigned')}
+          </button>
+        )}
       </div>
       {load.state === 'loading' && <Loading />}
       {load.state === 'error' && <ErrorMessage code={load.code} onRetry={reload} />}
@@ -201,7 +285,7 @@ export function AdminReportsPage() {
         ) : (
           <div className="flex flex-col gap-4">
             {load.data.map((report) => (
-              <ReportCard key={`${report.id}-${report.updated_at}`} report={report} onDone={reload} />
+              <ReportCard key={`${report.id}-${report.updated_at}`} report={report} organisations={choices} onDone={reload} />
             ))}
           </div>
         ))}

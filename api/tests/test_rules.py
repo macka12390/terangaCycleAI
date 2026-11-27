@@ -126,14 +126,14 @@ def test_unverified_collector_cannot_accept(api):
     assert api.accept(mission["id"], login="citoyen-demo").status_code == 403
 
 
-def test_mission_cannot_be_accepted_twice(api, app):
+def test_mission_cannot_be_accepted_twice(api, app, default_org):
     from app.extensions import db
     from app.models import User
 
     with app.app_context():
         db.session.add(
             User(name="Collecteur 2 (démo)", demo_login="collecteur-2", role="collector",
-                 is_verified=True)
+                 is_verified=True, organisation_id=default_org)
         )
         db.session.commit()
     _, mission = api.approved_mission()
@@ -177,12 +177,19 @@ def test_stats_require_admin_and_handle_demo_filter(api, app):
     with app.app_context():
         assert seed_demo() == 10
         assert seed_demo() == 0  # idempotent
+    # L'admin de l'organisation principale ne voit pas Pikine et Guédiawaye (autre UCG).
     stats = api.stats()
-    assert stats["demo"] == {"included": True, "demo_reports": 10}
+    assert stats["demo"] == {"included": True, "demo_reports": 8}
     assert stats["verified_kg"] == 85.5
     assert stats["reports"]["rejected"] == 1
-    assert stats["ai"]["by_mode"]["manual"] == 10
+    assert stats["ai"]["by_mode"]["manual"] == 8
     assert stats["ai"]["agreement_rate"] is None  # aucune IA évaluée sur du manuel
+
+    everything = api.client.get("/api/dashboard/stats", headers=api.headers("superadmin-demo"))
+    assert everything.get_json()["stats"]["demo"]["demo_reports"] == 10
+    pikine = api.client.get("/api/dashboard/stats", headers=api.headers("admin-pikine-demo"))
+    assert pikine.get_json()["stats"]["reports"]["total"] == 2
+    assert pikine.get_json()["stats"]["verified_kg"] == 0
 
     real = api.client.get("/api/dashboard/stats?include_demo=false",
                           headers=api.headers("admin-demo")).get_json()["stats"]
@@ -203,14 +210,14 @@ def test_ai_classify_preview_in_manual_mode(client):
     assert "aucun modèle" in ai["label"]
 
 
-def test_collector_can_release_and_another_can_take_over(api, app):
+def test_collector_can_release_and_another_can_take_over(api, app, default_org):
     from app.extensions import db
     from app.models import User
 
     with app.app_context():
         db.session.add(
             User(name="Collecteur 2 (démo)", demo_login="collecteur-2", role="collector",
-                 is_verified=True)
+                 is_verified=True, organisation_id=default_org)
         )
         db.session.commit()
     report, mission = api.approved_mission()

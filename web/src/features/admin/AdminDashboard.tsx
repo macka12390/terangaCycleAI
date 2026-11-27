@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Truck,
 } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Bar,
@@ -23,10 +24,11 @@ import {
   YAxis,
 } from 'recharts'
 
-import { dashboardStats } from '../../api/endpoints.ts'
+import { dashboardStats, listOrganisations } from '../../api/endpoints.ts'
 import type { Activity, Category } from '../../api/types.ts'
 import { DemoTag, Empty, ErrorMessage, Loading, StatCard } from '../../ui/common.tsx'
 import { formatDate, useLoad } from '../../ui/load.ts'
+import { getUser } from '../session/session.ts'
 
 // Tableau de bord d'impact (§3.7) : tout vient de GET /api/dashboard/stats, calculé par
 // l'API depuis la base. Les kilos ne comptent que les preuves vérifiées.
@@ -50,7 +52,7 @@ function ActivityLine({ item }: { item: Activity }) {
         {t('admin.dashboard.activityLine', {
           entity: t(`admin.dashboard.entities.${item.entity}` as 'admin.dashboard.entities.report'),
           number: item.tracking_number ?? `#${item.entity_id}`,
-          status: item.to_status,
+          status: item.to_status_label ?? item.to_status,
         })}
         {item.actor && <span className="text-muted"> · {item.actor}</span>}
       </span>
@@ -61,7 +63,31 @@ function ActivityLine({ item }: { item: Activity }) {
 
 export function AdminDashboard() {
   const { t } = useTranslation()
-  const { load, reload } = useLoad(dashboardStats)
+  const isSuperadmin = getUser()?.role === 'superadmin'
+  const [organisationId, setOrganisationId] = useState<number | undefined>(undefined)
+  const { load, reload } = useLoad(() => dashboardStats(organisationId), [organisationId])
+  const organisations = useLoad(
+    () => (isSuperadmin ? listOrganisations() : Promise.resolve(null)),
+    [isSuperadmin],
+  ).load
+
+  const picker = isSuperadmin && organisations.state === 'ready' && organisations.data && (
+    <label className="flex items-center gap-2 text-sm font-semibold text-ink">
+      {t('admin.dashboard.organisation')}
+      <select
+        value={organisationId ?? ''}
+        onChange={(event) => setOrganisationId(event.target.value ? Number(event.target.value) : undefined)}
+        className="min-h-11 rounded-xl border-2 border-line bg-surface px-3"
+      >
+        <option value="">{t('admin.dashboard.allOrganisations')}</option>
+        {organisations.data.organisations.map((organisation) => (
+          <option key={organisation.id} value={organisation.id}>
+            {organisation.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 
   if (load.state === 'loading') return <Loading />
   if (load.state === 'error') return <ErrorMessage code={load.code} onRetry={reload} />
@@ -74,6 +100,7 @@ export function AdminDashboard() {
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold text-brand-900">{t('admin.dashboard.title')}</h1>
         {stats.demo.included && stats.demo.demo_reports > 0 && <DemoTag />}
+        <span className="ml-auto">{picker}</span>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

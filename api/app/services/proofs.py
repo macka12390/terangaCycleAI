@@ -9,6 +9,7 @@ from app.constants import PROOF_STATUS_LABELS, MissionStatus, ProofStatus, Repor
 from app.extensions import db
 from app.models import CollectionProof, Mission, Report, User
 from app.services.auth import is_admin
+from app.services.organisations import ensure_report_in_scope, report_scope
 from app.services.events import record_event, transition
 from app.utils.errors import forbidden, invalid_transition, not_found, validation_error
 from app.utils.time import utcnow
@@ -26,7 +27,13 @@ def list_proofs(user: User, args: Mapping) -> list[CollectionProof]:
     query = CollectionProof.query
     if user.role == "collector":
         query = query.filter(CollectionProof.collector_id == user.id)
-    elif not is_admin(user):
+    elif is_admin(user):
+        query = (
+            query.join(Mission, CollectionProof.mission_id == Mission.id)
+            .join(Report, Mission.report_id == Report.id)
+            .filter(*report_scope(user))
+        )
+    else:
         raise forbidden()
     status = args.get("status")
     if status:
@@ -45,6 +52,7 @@ def verify(proof_id: int, admin: User, data: Mapping) -> CollectionProof:
         raise not_found("Preuve introuvable.")
     previous = proof.status
     mission = proof.mission
+    ensure_report_in_scope(admin, mission.report)
 
     if not transition(
         CollectionProof,

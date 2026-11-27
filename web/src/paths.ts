@@ -23,4 +23,6 @@ export const PATHS = {
   adminMap: '/admin/map',
   /** Gestion des comptes (admin, super admin). */
   adminAccounts: '/admin/accounts',
+  /** Organisations et zones (super admin). */
+  adminOrganisations: '/admin/organisations',
 } as const

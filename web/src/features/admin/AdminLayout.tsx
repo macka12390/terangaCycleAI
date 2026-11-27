@@ -1,4 +1,4 @@
-import { BarChart3, ClipboardCheck, LogOut, Map, Recycle, ShieldCheck, Truck, UsersRound } from 'lucide-react'
+import { BarChart3, Building2, ClipboardCheck, LogOut, Map, Recycle, ShieldCheck, Truck, UsersRound } from 'lucide-react'
 import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useNavigate } from 'react-router'
@@ -17,6 +17,7 @@ const LINKS = [
   { to: PATHS.adminProofs, key: 'proofs', Icon: ClipboardCheck, end: false },
   { to: PATHS.adminMap, key: 'map', Icon: Map, end: false },
   { to: PATHS.adminAccounts, key: 'accounts', Icon: UsersRound, end: false },
+  { to: PATHS.adminOrganisations, key: 'organisations', Icon: Building2, end: false, superadminOnly: true },
 ] as const
 
 export function AdminLayout() {
@@ -38,7 +39,7 @@ export function AdminLayout() {
         </div>
         <nav aria-label={t('admin.nav.label')}>
           <ul className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col md:pb-4">
-            {LINKS.map(({ to, key, Icon, end }) => (
+            {LINKS.filter((link) => !('superadminOnly' in link) || user?.role === 'superadmin').map(({ to, key, Icon, end }) => (
               <li key={key} className="shrink-0">
                 <NavLink
                   to={to}
@@ -61,6 +62,12 @@ export function AdminLayout() {
         <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
           <span className="flex items-center gap-2 font-semibold text-ink">
             {user?.name}
+            {user?.organisation && (
+              <span className="flex items-center gap-1 text-sm font-normal text-muted">
+                <Building2 aria-hidden="true" className="size-4" />
+                {user.organisation.name}
+              </span>
+            )}
             {user?.is_demo && <DemoTag />}
           </span>
           <button

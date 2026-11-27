@@ -25,6 +25,15 @@ def app(tmp_path):
 
 
 @pytest.fixture()
+def default_org(app):
+    """Id de l'organisation principale (Dakar), créée au démarrage."""
+    from app.services.organisations import ensure_default_organisation
+
+    with app.app_context():
+        return ensure_default_organisation().id
+
+
+@pytest.fixture()
 def client(app):
     return app.test_client()
 

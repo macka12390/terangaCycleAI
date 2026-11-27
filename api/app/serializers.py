@@ -6,11 +6,20 @@ from app.ai.service import suggested_category
 from app.constants import (
     AI_MODE_LABELS,
     MISSION_STATUS_LABELS,
+    ORGANISATION_KINDS,
     PROOF_STATUS_LABELS,
     REPORT_STATUS_LABELS,
     ROLES,
 )
-from app.models import AuditLog, CollectionProof, Mission, Report, StatusEvent, User
+from app.models import (
+    AuditLog,
+    CollectionProof,
+    Mission,
+    Organisation,
+    Report,
+    StatusEvent,
+    User,
+)
 from app.utils.images import photo_url
 from app.utils.time import iso
 
@@ -25,6 +34,7 @@ def user_to_dict(user: User) -> dict:
         "demo_login": user.demo_login,
         "phone": user.phone,
         "role_label": ROLES.get(user.role, user.role),
+        "organisation": organisation_summary(user.organisation),
         "is_active": user.is_active,
         "suspended_at": iso(user.suspended_at),
         "suspended_reason": user.suspended_reason,
@@ -38,6 +48,9 @@ AUDIT_ACTION_LABELS = {
     "account.update": "Compte modifié",
     "account.suspend": "Compte suspendu",
     "account.reactivate": "Compte réactivé",
+    "organisation.create": "Organisation créée",
+    "organisation.update": "Organisation modifiée",
+    "report.reassign": "Signalement rattaché à une organisation",
 }
 
 
@@ -51,6 +64,33 @@ def audit_to_dict(entry: AuditLog) -> dict:
         "details": json.loads(entry.details) if entry.details else None,
         "at": iso(entry.created_at),
     }
+
+
+def organisation_summary(organisation: Organisation | None) -> dict | None:
+    if organisation is None:
+        return None
+    return {"id": organisation.id, "name": organisation.name, "is_demo": organisation.is_demo}
+
+
+def organisation_to_dict(organisation: Organisation, counts: dict | None = None) -> dict:
+    data = {
+        "id": organisation.id,
+        "name": organisation.name,
+        "kind": organisation.kind,
+        "kind_label": ORGANISATION_KINDS.get(organisation.kind, organisation.kind),
+        "zone": {
+            "min_lat": organisation.min_lat,
+            "max_lat": organisation.max_lat,
+            "min_lng": organisation.min_lng,
+            "max_lng": organisation.max_lng,
+        },
+        "is_active": organisation.is_active,
+        "is_demo": organisation.is_demo,
+        "created_at": iso(organisation.created_at),
+    }
+    if counts is not None:
+        data["counts"] = counts
+    return data
 
 
 def user_summary(user: User | None) -> dict | None:
@@ -97,6 +137,7 @@ def report_to_dict(report: Report) -> dict:
         "moderated_by": user_summary(report.moderator),
         "moderated_at": iso(report.moderated_at),
         "mission_id": report.mission.id if report.mission else None,
+        "organisation": organisation_summary(report.organisation),
         "user_id": report.user_id,
         "is_demo": report.is_demo,
         "created_at": iso(report.created_at),
@@ -149,6 +190,7 @@ def mission_to_dict(mission: Mission) -> dict:
         "completed_at": iso(mission.completed_at),
         "created_at": iso(mission.created_at),
         "proof": proof_to_dict(latest) if latest else None,
+        "organisation": organisation_summary(report.organisation),
         "is_demo": report.is_demo,
     }
 

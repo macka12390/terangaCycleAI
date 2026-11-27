@@ -55,6 +55,19 @@ def create_app(config_object: type | None = None, overrides: dict | None = None)
 
         for column in upgrade_schema():
             app.logger.info("schema_column_added %s", column)
+        from app.schema import run_data_migrations
+        from app.services.organisations import (
+            backfill_organisations,
+            ensure_default_organisation,
+            ensure_demo_organisations,
+        )
+
+        # Toutes les zones existent avant le rattachement des anciennes données.
+        ensure_default_organisation()
+        ensure_demo_organisations()
+        # Version 3 : rattachement des données d'avant le multi-organisations (une seule fois).
+        for version in run_data_migrations({3: backfill_organisations}):
+            app.logger.info("data_migration_applied %s", version)
         ensure_demo_users()
     init_ai(app)
     from app.sms import init_sms

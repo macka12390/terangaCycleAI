@@ -73,8 +73,12 @@ def test_admin_cannot_create_or_manage_admins(api, app):
     assert patch(api, collector_id, role="admin").status_code == 403
 
 
-def test_superadmin_manages_everyone_and_inherits_admin_rights(api, app):
-    assert create(api, login="superadmin-demo", role="admin", phone="770000003").status_code == 201
+def test_superadmin_manages_everyone_and_inherits_admin_rights(api, app, default_org):
+    missing = create(api, login="superadmin-demo", role="admin", phone="770000003")
+    assert missing.get_json()["error"]["details"]["field"] == "organisation_id"
+    created = create(api, login="superadmin-demo", role="admin", phone="770000003",
+                     organisation_id=default_org)
+    assert created.status_code == 201
     listing = api.client.get("/api/accounts", headers=api.headers("superadmin-demo")).get_json()
     assert listing["manageable_roles"] == ["citizen", "admin", "collector", "superadmin"]
 
@@ -99,15 +103,17 @@ def test_nobody_edits_own_account_or_demo_accounts(api, app):
     assert locked.get_json()["error"]["code"] == "DEMO_ACCOUNT_LOCKED"
 
 
-def test_last_real_superadmin_is_protected(api, app):
+def test_last_real_superadmin_is_protected(api, app, default_org):
     boss = real_user(app, "+221770000010", "superadmin", name="Chef")
-    demoted = patch(api, boss, login="superadmin-demo", role="admin")
+    demoted = patch(api, boss, login="superadmin-demo", role="admin", organisation_id=default_org)
     assert demoted.status_code == 409
     assert demoted.get_json()["error"]["code"] == "LAST_SUPERADMIN"
     assert suspend(api, boss, login="superadmin-demo").get_json()["error"]["code"] == "LAST_SUPERADMIN"
 
     real_user(app, "+221770000011", "superadmin", name="Adjoint")
-    assert patch(api, boss, login="superadmin-demo", role="admin").status_code == 200
+    demoted = patch(api, boss, login="superadmin-demo", role="admin", organisation_id=default_org)
+    assert demoted.status_code == 200
+    assert demoted.get_json()["account"]["organisation"]["id"] == default_org
 
 
 def test_suspension_blocks_access_and_frees_missions(api, app):

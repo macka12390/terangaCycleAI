@@ -50,6 +50,7 @@ Erreur (toujours ce format, message en français lisible par l'utilisateur) :
 | 403 | `DEMO_ACCOUNT_LOCKED` | Les comptes de démonstration ne sont pas modifiables |
 | 409 | `PHONE_TAKEN` | Un compte existe déjà avec ce numéro |
 | 409 | `LAST_SUPERADMIN` | Dernier super admin réel actif : ni rétrogradé ni suspendu |
+| 409 | `NAME_TAKEN` | Une organisation porte déjà ce nom |
 | 404 | `NOT_FOUND` | Ressource ou route inconnue |
 | 409 | `INVALID_TRANSITION` | Le statut actuel ne permet pas l'opération |
 | 409 | `MISSION_ALREADY_TAKEN` | Mission déjà acceptée par un autre collecteur |
@@ -120,6 +121,8 @@ Compte réel : `"is_demo": false`, `"demo_login": null`, `"phone": "+22177123456
 
 `role` : `citizen`, `collector`, `admin` ou `superadmin` (le super admin a tous les droits de l'admin, plus la gestion des admins et le journal d'audit).
 
+`organisation` : `{ id, name, is_demo }` ou `null` (citoyen, super admin).
+
 Champs de gestion (étape 2) : `role_label`, `is_active`, `suspended_at`, `suspended_reason`, `created_at`, `last_login_at`.
 
 ### `ai` (résultat de classification)
@@ -172,6 +175,8 @@ Champs de gestion (étape 2) : `role_label`, `is_active`, `suspended_at`, `suspe
 ```
 
 `voice_url` : note vocale du citoyen (wolof ou français), ou `null`. À lire avec `<audio controls src={voice_url}>` dans la modération.
+
+`organisation` : `{ id, name, is_demo }` de l'organisation qui traite le dépôt, ou `null` s'il est **hors de toute zone** (visible du seul super admin, qui le rattache). Présent aussi sur `mission`.
 
 `category` est la meilleure catégorie connue, pour l'affichage : `final_category` (décidée par l'admin), sinon `citizen_category`, sinon `ai.suggested_category`.
 
@@ -248,7 +253,7 @@ Légende accès : 🌐 public · 👤 citoyen (jeton facultatif) · 🛡️ admi
 | POST | `/api/auth/demo` | 🌐 | `{ "login": "admin-demo" }` | `{ success, token, user }` |
 | GET | `/api/auth/me` | jeton | — | `{ success, user }` |
 
-Comptes : `citoyen-demo`, `admin-demo`, `superadmin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
+Comptes : `citoyen-demo`, `admin-demo` (organisation principale), `admin-pikine-demo` (UCG Pikine-Guédiawaye), `superadmin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
 `demo-accounts` renvoie aussi `demo_enabled` ; s'il vaut `false`, n'afficher que la connexion par SMS.
 
 ### Connexion par code SMS (OTP)
@@ -438,6 +443,34 @@ Tout est calculé à la volée depuis la base.
 - Suspendre un collecteur **libère ses missions acceptées** (elles redeviennent disponibles) ; celles dont la preuve attend une vérification ne bougent pas. Le compte suspendu ne peut plus se connecter et ses jetons sont refusés (403 `ACCOUNT_SUSPENDED`).
 - Chaque création, modification, suspension et réactivation est inscrite au journal d'audit (numéro masqué).
 - Premier super admin : `flask --app run create-user --phone "…" --name "…" --role superadmin`.
+
+### Organisations (étape 3)
+
+Une organisation (commune, UCG, ONG, entreprise de collecte) traite les dépôts de sa **zone** : un rectangle `min_lat`, `max_lat`, `min_lng`, `max_lng`. À la création, un signalement est rattaché à l'organisation **active** dont la zone le contient ; si plusieurs zones se chevauchent, **la plus petite l'emporte**. Hors de toute zone : `organisation: null`.
+
+**Cloisonnement** : un admin ou un collecteur ne voit que les signalements, missions, preuves, statistiques et comptes de **son** organisation (plus les citoyens, sans organisation). Le super admin voit tout. Une ressource d'une autre organisation renvoie 403.
+
+| Méthode | Route | Accès | Corps | Réponse |
+|---|---|---|---|---|
+| GET | `/api/organisations` | 🛡️ (admin : la sienne) | — | `{ success, organisations: [organisation], unassigned_reports? }` |
+| POST | `/api/organisations` | super admin | `{ name, kind, min_lat, max_lat, min_lng, max_lng }` | 201 `{ success, organisation }` |
+| PATCH | `/api/organisations/<id>` | super admin | mêmes champs, et `is_active` | `{ success, organisation }` |
+| PATCH | `/api/reports/<id>/organisation` | super admin | `{ "organisation_id": 2 }` | `{ success, report }` |
+
+```json
+{ "id": 2, "name": "UCG Pikine-Guédiawaye (démo)", "kind": "ucg", "kind_label": "UCG (gestion des déchets)",
+  "zone": { "min_lat": 14.73, "max_lat": 14.81, "min_lng": -17.42, "max_lng": -17.33 },
+  "is_active": true, "is_demo": true, "created_at": "…",
+  "counts": { "reports": 2, "admins": 1, "collectors": 0 } }
+```
+
+- `kind` : `commune`, `ucg`, `ong`, `entreprise`.
+- `unassigned_reports` (super admin) : nombre de signalements hors zone à rattacher.
+- Rattacher un signalement : seulement tant qu'aucun collecteur ne s'en occupe (`pending`, `approved`, `rejected`), sinon 409.
+- Une organisation désactivée (`is_active: false`) ne reçoit plus de nouveaux signalements.
+- Filtres super admin : `GET /api/reports?organisation_id=2` (ou `none` pour les hors zone), `GET /api/accounts?organisation_id=2`, `GET /api/dashboard/stats?organisation_id=2`.
+- Comptes : un admin crée des collecteurs **de son organisation** ; le super admin doit préciser `organisation_id` pour un admin ou un collecteur (création ou changement de rôle) et peut déplacer un compte (`PATCH /api/accounts/<id>` avec `organisation_id`).
+- Données d'avant l'étape 3 : rattachées au premier démarrage (organisation principale « Dakar », ou zone plus précise selon la position).
 
 ### Photos
 

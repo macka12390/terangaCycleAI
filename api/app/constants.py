@@ -15,6 +15,28 @@ ROLES: dict[str, str] = {
     "superadmin": "Super administrateur",
 }
 
+# Types d'organisation qui traitent les signalements (étape 3, multi-organisations).
+ORGANISATION_KINDS: dict[str, str] = {
+    "commune": "Commune",
+    "ucg": "UCG (gestion des déchets)",
+    "ong": "ONG ou association",
+    "entreprise": "Entreprise de collecte",
+}
+
+# Organisation créée au premier démarrage : elle reçoit les données d'avant l'étape 3.
+# Zone : région de Dakar (Dakar, Pikine, Guédiawaye, Rufisque ouest).
+DEFAULT_ORGANISATION = {
+    "name": "Organisation principale (Dakar)",
+    "kind": "ucg",
+    "min_lat": 14.60,
+    "max_lat": 14.90,
+    "min_lng": -17.56,
+    "max_lng": -17.10,
+}
+
+# Rôles rattachés à une organisation (les citoyens et le super admin ne le sont pas).
+ORGANISATION_ROLES = ("admin", "collector")
+
 # Rôles qui ont accès à la console d'administration (le super admin hérite de l'admin).
 ADMIN_ROLES = ("admin", "superadmin")
 

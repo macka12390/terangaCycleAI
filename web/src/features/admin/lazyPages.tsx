@@ -23,3 +23,6 @@ export const AdminProofsPage = lazy(() =>
 export const AdminAccountsPage = lazy(() =>
   import('./AdminAccountsPage.tsx').then((m) => ({ default: m.AdminAccountsPage })),
 )
+export const AdminOrganisationsPage = lazy(() =>
+  import('./AdminOrganisationsPage.tsx').then((m) => ({ default: m.AdminOrganisationsPage })),
+)

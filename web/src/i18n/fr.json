@@ -287,7 +287,8 @@
     "ACCOUNT_SUSPENDED": "Ce compte est suspendu. Contactez l'équipe TerangaCycle.",
     "DEMO_ACCOUNT_LOCKED": "Les comptes de démonstration ne sont pas modifiables.",
     "PHONE_TAKEN": "Un compte existe déjà avec ce numéro.",
-    "LAST_SUPERADMIN": "C'est le dernier super administrateur actif : nommez-en un autre d'abord."
+    "LAST_SUPERADMIN": "C'est le dernier super administrateur actif : nommez-en un autre d'abord.",
+    "NAME_TAKEN": "Une organisation porte déjà ce nom."
   },
   "statuses": {
     "report": {
@@ -345,7 +346,8 @@
       "missions": "Missions",
       "proofs": "Preuves",
       "map": "Carte",
-      "accounts": "Comptes"
+      "accounts": "Comptes",
+      "organisations": "Organisations"
     },
     "logout": "Quitter",
     "dashboard": {
@@ -373,7 +375,9 @@
         "report": "Signalement",
         "mission": "Mission",
         "proof": "Preuve"
-      }
+      },
+      "organisation": "Organisation",
+      "allOrganisations": "Toutes les organisations"
     },
     "reports": {
       "title": "Modération des signalements",
@@ -383,7 +387,7 @@
       "manual": "Classification manuelle (aucun modèle)",
       "citizenCategory": "Choix du citoyen",
       "comment": "Commentaire",
-      "voice": "Message vocal",
+      "voice": "Note vocale du citoyen",
       "finalCategory": "Catégorie retenue",
       "reason": "Motif du rejet",
       "map": "Voir sur la carte",
@@ -393,7 +397,12 @@
       "reasonLabel": "Motif du rejet",
       "reasonPlaceholder": "Ex. : pas un dépôt de déchets",
       "needCategory": "Aucune catégorie connue : choisissez-la avant de valider.",
-      "correct": "Corriger la catégorie"
+      "correct": "Corriger la catégorie",
+      "organisation": "Organisation",
+      "unassigned": "Hors zone",
+      "unassignedHint": "Ce dépôt n'est dans la zone d'aucune organisation : rattachez-le.",
+      "reassign": "Rattacher à",
+      "reassignChoose": "Choisir une organisation"
     },
     "missions": {
       "title": "Missions",
@@ -452,7 +461,8 @@
         "role": "Rôle",
         "verified": "Collecteur vérifié (peut accepter des missions)",
         "submit": "Créer le compte",
-        "done": "Compte créé : {{name}} se connecte avec son numéro, par SMS."
+        "done": "Compte créé : {{name}} se connecte avec son numéro, par SMS.",
+        "organisation": "Organisation"
       },
       "list": {
         "empty": "Aucun compte ne correspond.",
@@ -463,7 +473,8 @@
         "verified": "Vérifié",
         "notVerified": "Non vérifié",
         "you": "vous",
-        "demo": "Compte de démonstration : non modifiable."
+        "demo": "Compte de démonstration : non modifiable.",
+        "organisation": "Organisation"
       },
       "actions": {
         "verify": "Vérifier",
@@ -480,13 +491,58 @@
         "reactivated": "Compte réactivé.",
         "verified": "Collecteur vérifié.",
         "unverified": "Vérification retirée.",
-        "roleChanged": "Rôle modifié."
+        "roleChanged": "Rôle modifié.",
+        "organisationChanged": "Organisation modifiée."
       },
       "audit": {
         "title": "Journal d'audit",
         "empty": "Aucune action enregistrée.",
         "by": "par {{name}}",
         "on": "· {{name}}"
+      }
+    },
+    "organisations": {
+      "title": "Organisations",
+      "intro": "Chaque organisation (commune, UCG, ONG, entreprise) traite les dépôts de sa zone. Un dépôt va à l'organisation active dont la zone le contient ; si plusieurs zones se chevauchent, la plus petite l'emporte.",
+      "create": "Nouvelle organisation",
+      "createTitle": "Nouvelle organisation",
+      "editTitle": "Modifier l'organisation",
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "empty": "Aucune organisation.",
+      "created": "Organisation créée : {{name}}.",
+      "saved": "Organisation enregistrée.",
+      "activate": "Réactiver",
+      "deactivate": "Désactiver",
+      "activated": "Organisation réactivée : elle reçoit de nouveau les dépôts de sa zone.",
+      "deactivated": "Organisation désactivée : elle ne reçoit plus de nouveaux dépôts.",
+      "inactive": "Désactivée",
+      "viewZone": "Voir la zone",
+      "counts": "{{reports}} signalement(s) · {{admins}} admin(s) · {{collectors}} collecteur(s)",
+      "zone": "Zone : latitude {{lat}}, longitude {{lng}} (≈ {{height}} × {{width}} km)",
+      "zoneHint": "Rectangle de la zone en degrés décimaux. Dakar : latitude ≈ 14,7, longitude ≈ −17,45 (négative à l'ouest).",
+      "unassigned": "Signalements hors de toute zone, en attente de rattachement : {{count}}.",
+      "unassignedLink": "Les rattacher depuis la modération",
+      "fields": {
+        "name": "Nom",
+        "kind": "Type",
+        "min_lat": "Latitude minimale (sud)",
+        "max_lat": "Latitude maximale (nord)",
+        "min_lng": "Longitude minimale (ouest)",
+        "max_lng": "Longitude maximale (est)"
+      },
+      "kinds": {
+        "commune": "Commune",
+        "ucg": "UCG (gestion des déchets)",
+        "ong": "ONG ou association",
+        "entreprise": "Entreprise de collecte"
+      },
+      "problems": {
+        "missing": "Renseignez les quatre coordonnées.",
+        "latRange": "Les latitudes vont de −90 à 90.",
+        "lngRange": "Les longitudes vont de −180 à 180.",
+        "latOrder": "La latitude minimale doit être inférieure à la maximale.",
+        "lngOrder": "La longitude minimale doit être inférieure à la maximale."
       }
     }
   },

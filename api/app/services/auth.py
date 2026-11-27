@@ -20,7 +20,20 @@ from app.utils.time import utcnow
 # Comptes fictifs, clairement identifiés : aucun nom, téléphone ni e-mail réel.
 DEMO_ACCOUNTS = (
     {"demo_login": "citoyen-demo", "name": "Citoyen Démo", "role": "citizen", "is_verified": True},
-    {"demo_login": "admin-demo", "name": "Admin Démo", "role": "admin", "is_verified": True},
+    {
+        "demo_login": "admin-demo",
+        "name": "Admin Démo",
+        "role": "admin",
+        "is_verified": True,
+        "organisation": "default",
+    },
+    {
+        "demo_login": "admin-pikine-demo",
+        "name": "Admin UCG Pikine (démo)",
+        "role": "admin",
+        "is_verified": True,
+        "organisation": "pikine",
+    },
     {
         "demo_login": "superadmin-demo",
         "name": "Super Admin Démo",
@@ -32,12 +45,14 @@ DEMO_ACCOUNTS = (
         "name": "Collecteur Démo (vérifié)",
         "role": "collector",
         "is_verified": True,
+        "organisation": "default",
     },
     {
         "demo_login": "collecteur-non-verifie",
         "name": "Collecteur Démo (non vérifié)",
         "role": "collector",
         "is_verified": False,
+        "organisation": "default",
     },
 )
 
@@ -57,11 +72,20 @@ def ensure_active(user: User) -> None:
 
 
 def ensure_demo_users() -> None:
-    """Crée les comptes de démonstration manquants (idempotent, appelé au démarrage)."""
-    existing = {login for (login,) in db.session.query(User.demo_login).all()}
+    """Crée les comptes de démonstration manquants et leurs organisations (idempotent)."""
+    from app.services.organisations import ensure_default_organisation, ensure_demo_organisations
+
+    organisations = {"default": ensure_default_organisation(), **ensure_demo_organisations()}
+    existing = {user.demo_login: user for user in User.query.filter(User.demo_login.isnot(None))}
     for account in DEMO_ACCOUNTS:
-        if account["demo_login"] not in existing:
-            db.session.add(User(is_demo=True, **account))
+        values = dict(account)
+        key = values.pop("organisation", None)
+        organisation_id = organisations[key].id if key else None
+        user = existing.get(values["demo_login"])
+        if user is None:
+            db.session.add(User(is_demo=True, organisation_id=organisation_id, **values))
+        elif user.organisation_id is None and organisation_id is not None:
+            user.organisation_id = organisation_id
     db.session.commit()
 
 

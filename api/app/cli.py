@@ -36,7 +36,13 @@ def register_commands(app: Flask) -> None:
         show_default=True,
     )
     @click.option("--verified", is_flag=True, help="Collecteur vérifié (peut accepter des missions)")
-    def create_user_command(phone: str, name: str, role: str, verified: bool):
+    @click.option(
+        "--organisation", "organisation_id", type=int, default=None,
+        help="Id de l'organisation (admin, collecteur) ; défaut : organisation principale",
+    )
+    def create_user_command(
+        phone: str, name: str, role: str, verified: bool, organisation_id: int | None
+    ):
         """Crée un compte réel ; la personne se connecte ensuite par code SMS."""
         from app.models import User
         from app.utils.errors import ApiError
@@ -48,13 +54,28 @@ def register_commands(app: Flask) -> None:
             raise click.BadParameter(exc.message, param_hint="--phone") from None
         if User.query.filter_by(phone=normalized).first() is not None:
             raise click.ClickException(f"Un compte existe déjà pour {mask_phone(normalized)}.")
+        from app.constants import ORGANISATION_ROLES
+        from app.models import Organisation
+        from app.services.organisations import ensure_default_organisation
+
+        organisation = None
+        if role in ORGANISATION_ROLES:
+            organisation = (
+                db.session.get(Organisation, organisation_id)
+                if organisation_id is not None
+                else ensure_default_organisation()
+            )
+            if organisation is None:
+                raise click.BadParameter("organisation inconnue", param_hint="--organisation")
         user = User(
-            name=name.strip(), phone=normalized, role=role, is_verified=verified, is_demo=False
+            name=name.strip(), phone=normalized, role=role, is_verified=verified, is_demo=False,
+            organisation_id=organisation.id if organisation else None,
         )
         db.session.add(user)
         db.session.commit()
         state = " (vérifié)" if verified else ""
-        click.echo(f"Compte {role}{state} créé pour {mask_phone(normalized)} : « {user.name} ».")
+        where = f" ({organisation.name})" if organisation else ""
+        click.echo(f"Compte {role}{state} créé pour {mask_phone(normalized)} : « {user.name} »{where}.")
 
     @app.cli.command("reset-db")
     @click.confirmation_option(prompt="Effacer TOUTE la base locale et les photos ?")

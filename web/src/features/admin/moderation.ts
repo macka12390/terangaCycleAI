@@ -13,3 +13,8 @@ export function suggestedCategory(report: Report): WasteType | null {
 export function canCorrect(report: Report): boolean {
   return report.status !== 'pending' && report.status !== 'rejected' && report.status !== 'completed'
 }
+
+/** Rattachement à une autre organisation (super admin) : tant qu'aucun collecteur n'intervient. */
+export function canReassign(report: Report): boolean {
+  return report.status === 'pending' || report.status === 'approved' || report.status === 'rejected'
+}

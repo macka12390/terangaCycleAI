@@ -11,6 +11,31 @@ export type ProofStatus = 'pending' | 'verified' | 'rejected' | 'disputed'
 /** `model` : modèle évalué ; `prototype` : classificateur expérimental ; `manual` : aucune IA. */
 export type AiMode = 'model' | 'prototype' | 'manual'
 
+/** Organisation qui traite les dépôts d'une zone (étape 3). */
+export interface OrganisationSummary {
+  id: number
+  name: string
+  is_demo: boolean
+}
+
+export type OrganisationKind = 'commune' | 'ucg' | 'ong' | 'entreprise'
+
+export interface Zone {
+  min_lat: number
+  max_lat: number
+  min_lng: number
+  max_lng: number
+}
+
+export interface Organisation extends OrganisationSummary {
+  kind: OrganisationKind
+  kind_label: string
+  zone: Zone
+  is_active: boolean
+  created_at: string
+  counts?: { reports: number; admins: number; collectors: number }
+}
+
 export interface User {
   id: number
   name: string
@@ -23,6 +48,8 @@ export interface User {
   phone?: string | null
   // Gestion des comptes (étape 2) : présents dans les réponses de /api/accounts et /auth.
   role_label?: string
+  /** Admins et collecteurs : leur organisation ; `null` pour un citoyen ou le super admin. */
+  organisation?: OrganisationSummary | null
   is_active?: boolean
   suspended_at?: string | null
   suspended_reason?: string | null
@@ -58,6 +85,10 @@ export interface Report {
   id: number
   tracking_number: string
   status: ReportStatus
+  /** `null` : hors de toute zone (à rattacher par le super admin). */
+  organisation?: OrganisationSummary | null
+  /** Note vocale du citoyen (wolof ou français), ou `null`. */
+  voice_url?: string | null
   status_label: string
   photo_url: string
   latitude: number | null
@@ -114,6 +145,7 @@ export interface Proof {
 export interface Mission {
   id: number
   status: MissionStatus
+  organisation?: OrganisationSummary | null
   status_label: string
   report_id: number
   tracking_number: string
@@ -139,6 +171,9 @@ export interface Activity {
   tracking_number: string | null
   from_status: string | null
   to_status: string
+  /** Libellé français du statut (« Vérifiée »…), à afficher plutôt que `to_status`. */
+  to_status_label?: string
+  summary?: string
   actor: string | null
   note: string | null
   at: string

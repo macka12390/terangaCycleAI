@@ -20,6 +20,7 @@ from app.utils.time import utcnow
 
 if TYPE_CHECKING:
     from app.models.mission import Mission
+    from app.models.organisation import Organisation
     from app.models.user import User
 
 
@@ -70,6 +71,10 @@ class Report(db.Model):
     rejection_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    # Organisation qui traite ce dépôt (selon sa position) ; NULL = hors de toute zone.
+    organisation_id: Mapped[int | None] = mapped_column(
+        ForeignKey("organisations.id"), nullable=True
+    )
     moderated_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     moderated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
@@ -82,3 +87,4 @@ class Report(db.Model):
     user: Mapped["User | None"] = relationship(foreign_keys=[user_id])
     moderator: Mapped["User | None"] = relationship(foreign_keys=[moderated_by])
     mission: Mapped["Mission | None"] = relationship(back_populates="report", uselist=False)
+    organisation: Mapped["Organisation | None"] = relationship()

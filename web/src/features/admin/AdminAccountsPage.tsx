@@ -6,13 +6,14 @@ import {
   type AccountFilters,
   createAccount,
   listAccounts,
+  listOrganisations,
   listAudit,
   reactivateAccount,
   suspendAccount,
   updateAccount,
 } from '../../api/endpoints.ts'
 import { errorCode } from '../../api/http.ts'
-import type { Role, User } from '../../api/types.ts'
+import type { Organisation, Role, User } from '../../api/types.ts'
 import { DemoTag, Empty, ErrorMessage, Loading } from '../../ui/common.tsx'
 import { formatDate, useLoad } from '../../ui/load.ts'
 import { formatPhone, isSenegalMobile } from '../session/login.ts'
@@ -36,6 +37,12 @@ export function AdminAccountsPage() {
   const [busy, setBusy] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
   const [auditVersion, setAuditVersion] = useState(0)
+  const isSuperadmin = me?.role === 'superadmin'
+  const organisationsLoad = useLoad(
+    () => (isSuperadmin ? listOrganisations().then((list) => list.organisations) : Promise.resolve(null)),
+    [isSuperadmin],
+  ).load
+  const organisations = organisationsLoad.state === 'ready' ? organisationsLoad.data : null
 
   async function run(id: number, action: () => Promise<string>) {
     setBusy(id)
@@ -75,6 +82,7 @@ export function AdminAccountsPage() {
       {creating && load.state === 'ready' && (
         <CreateAccountForm
           manageable={load.data.manageableRoles}
+          organisations={organisations}
           onCancel={() => setCreating(false)}
           onCreated={(account) => {
             setCreating(false)
@@ -146,6 +154,7 @@ export function AdminAccountsPage() {
                 account={account}
                 me={me}
                 manageable={load.data.manageableRoles}
+                organisations={organisations}
                 busy={busy === account.id}
                 run={(action) => void run(account.id, action)}
               />
@@ -158,16 +167,21 @@ export function AdminAccountsPage() {
   )
 }
 
+const STAFF: Role[] = ['admin', 'collector']
+
 function AccountCard({
   account,
   me,
   manageable,
+  organisations,
   busy,
   run,
 }: {
   account: User
   me: User | null
   manageable: Role[]
+  /** Super admin seulement : organisations proposées. */
+  organisations: Organisation[] | null
   busy: boolean
   run: (action: () => Promise<string>) => void
 }) {
@@ -204,6 +218,12 @@ function AccountCard({
           <dt className="text-muted">{t('admin.accounts.list.phone')}</dt>
           <dd className="font-mono text-ink">{displayPhone(account.phone)}</dd>
         </div>
+        {account.organisation && (
+          <div className="flex gap-2">
+            <dt className="text-muted">{t('admin.accounts.list.organisation')}</dt>
+            <dd className="text-ink">{account.organisation.name}</dd>
+          </div>
+        )}
         <div className="flex gap-2">
           <dt className="text-muted">{t('admin.accounts.list.lastLogin')}</dt>
           <dd className="text-ink">
@@ -246,8 +266,12 @@ function AccountCard({
                 disabled={busy}
                 onChange={(event) => {
                   const role = event.target.value as Role
+                  // Admin ou collecteur : rattaché à son organisation actuelle, sinon la première active.
+                  const organisationId = STAFF.includes(role)
+                    ? (account.organisation?.id ?? organisations?.find((o) => o.is_active)?.id)
+                    : undefined
                   run(async () => {
-                    await updateAccount(account.id, { role })
+                    await updateAccount(account.id, { role, organisation_id: organisationId })
                     return t('admin.accounts.actions.roleChanged')
                   })
                 }}
@@ -256,6 +280,29 @@ function AccountCard({
                 {roleOptions(manageable).map((role) => (
                   <option key={role} value={role}>
                     {t(`admin.accounts.roles.${role}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {organisations && STAFF.includes(account.role) && active && (
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink">
+              {t('admin.accounts.list.organisation')}
+              <select
+                value={account.organisation?.id ?? ''}
+                disabled={busy}
+                onChange={(event) => {
+                  const organisationId = Number(event.target.value)
+                  run(async () => {
+                    await updateAccount(account.id, { organisation_id: organisationId })
+                    return t('admin.accounts.actions.organisationChanged')
+                  })
+                }}
+                className={FIELD}
+              >
+                {organisations.map((organisation) => (
+                  <option key={organisation.id} value={organisation.id}>
+                    {organisation.name}
                   </option>
                 ))}
               </select>
@@ -331,10 +378,12 @@ function AccountCard({
 
 function CreateAccountForm({
   manageable,
+  organisations,
   onCancel,
   onCreated,
 }: {
   manageable: Role[]
+  organisations: Organisation[] | null
   onCancel: () => void
   onCreated: (account: User) => void
 }) {
@@ -344,9 +393,13 @@ function CreateAccountForm({
   const [name, setName] = useState('')
   const [role, setRole] = useState<Role>(options.includes('collector') ? 'collector' : options[0])
   const [verified, setVerified] = useState(true)
+  const activeOrganisations = organisations?.filter((organisation) => organisation.is_active) ?? null
+  const [organisationId, setOrganisationId] = useState<number | undefined>(activeOrganisations?.[0]?.id)
+  const needsOrganisation = organisations !== null && STAFF.includes(role)
   const [pending, setPending] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
-  const valid = isSenegalMobile(phone) && name.trim().length > 0
+  const valid =
+    isSenegalMobile(phone) && name.trim().length > 0 && (!needsOrganisation || organisationId !== undefined)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -355,7 +408,13 @@ function CreateAccountForm({
     setFailure(null)
     try {
       onCreated(
-        await createAccount({ phone, name: name.trim(), role, is_verified: role === 'collector' && verified }),
+        await createAccount({
+          phone,
+          name: name.trim(),
+          role,
+          is_verified: role === 'collector' && verified,
+          organisation_id: needsOrganisation ? organisationId : undefined,
+        }),
       )
     } catch (error) {
       setFailure(errorCode(error))
@@ -393,6 +452,22 @@ function CreateAccountForm({
             ))}
           </select>
         </label>
+        {needsOrganisation && activeOrganisations && (
+          <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
+            {t('admin.accounts.create.organisation')}
+            <select
+              value={organisationId ?? ''}
+              onChange={(event) => setOrganisationId(Number(event.target.value))}
+              className={FIELD}
+            >
+              {activeOrganisations.map((organisation) => (
+                <option key={organisation.id} value={organisation.id}>
+                  {organisation.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {role === 'collector' && (
           <label className="flex min-h-11 items-center gap-2 self-end text-sm font-semibold text-ink">
             <input type="checkbox" checked={verified} onChange={(event) => setVerified(event.target.checked)} className="size-5" />

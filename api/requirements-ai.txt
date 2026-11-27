@@ -1,0 +1,13 @@
+# Facultatif : classification IA locale (CLIP zéro-shot, mode « prototype »).
+# Sans ces paquets, le backend tourne en mode manuel, clairement identifié.
+#   pip install -r requirements-ai.txt
+#   python scripts/download_model.py
+# Versions figées : une montée de version de transformers (4 → 5) a déjà changé l'API de
+# CLIP. Ne les mettre à jour qu'en relançant scripts/evaluate_model.py.
+# PyTorch CPU (évite de télécharger la version CUDA, beaucoup plus lourde) :
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.15.0
+transformers==5.24.1
+tokenizers==0.23.3
+safetensors==0.8.0
+huggingface_hub==2.4.0

@@ -1,0 +1,19 @@
+"""Lancement du backend : `python run.py` ou `flask --app run run --debug`."""
+
+import os
+
+from dotenv import load_dotenv
+
+# Avant l'import de l'app : la configuration lit l'environnement à l'import.
+load_dotenv()
+
+from app import create_app  # noqa: E402
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "5000")),
+        debug=os.environ.get("FLASK_DEBUG", "1") == "1",
+    )

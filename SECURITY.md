@@ -20,7 +20,7 @@ Décrivez, autant que possible :
 ## Ce qu'il ne faut pas faire
 
 - **Pas d'issue publique**, de pull request ni de message public tant que la faille n'est pas corrigée.
-- **Pas de test sur des données réelles** : ni sur une instance déployée, ni sur les comptes ou les signalements d'autres personnes. Testez sur votre propre pile locale (`docker compose --profile demo up`, voir le [README](README.md)), avec des données factices.
+- **Pas de test sur des données réelles** : ni sur une instance déployée, ni sur les comptes ou les signalements d'autres personnes. Testez sur votre propre pile locale (backend Flask lancé en local, voir [api/README.md](api/README.md)), avec des données factices.
 - Pas de déni de service, d'ingénierie sociale ni d'accès physique.
 
 ## Versions couvertes

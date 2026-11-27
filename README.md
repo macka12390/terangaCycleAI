@@ -35,256 +35,59 @@ Le cœur du projet n'est pas le signalement mais **la valorisation** : le matchi
 | **Durable** | Économie circulaire : chaque déchet devient une matière tracée, avec des indicateurs d'impact mesurés |
 | **Inclusive** | Français et wolof, mode hors-ligne, pictogrammes, canal SMS/WhatsApp, récupérateurs informels intégrés comme acteurs rémunérés |
 
-## Stack technique
+## Stack technique (MVP hackathon 24 h)
 
 | Couche | Technologies |
 |---|---|
-| Frontend | React + TypeScript (Vite), PWA (Workbox), Dexie/IndexedDB, Leaflet, i18next, Tailwind CSS |
-| IA | PyTorch (fine-tuning MobileNetV3), ONNX Runtime (serveur) et onnxruntime-web (navigateur) |
-| Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, arq |
-| Données | PostgreSQL 16 + PostGIS, Redis, stockage objet compatible S3 (MinIO) |
-| Infra | Docker Compose, Caddy ; pilote AWS (Terraform) ; cible : hébergeur local |
-| Qualité | pytest, Vitest, Playwright, k6, GitHub Actions, Gitleaks, Bandit, Trivy |
+| Frontend | React + Vite, React Router, Tailwind CSS, Lucide (dossier `web/`) |
+| Backend | Python 3.12, Flask, Flask-SQLAlchemy, SQLite (dossier `api/`) |
+| IA | Classification locale (CLIP zéro-shot, mode « prototype »), mode manuel si aucun modèle n'est installé ; aucune API d'IA étrangère |
+| Photos | Stockage local, ré-encodage JPEG sans métadonnées EXIF |
+
+Pas de Docker pour le MVP : deux commandes suffisent pour lancer le projet.
 
 ## Démarrer en local
 
-Prérequis : Docker avec Compose v2.24 ou plus récent, sur une machine x86_64 (l'image `postgis/postgis` n'existe qu'en amd64), et Python 3 pour le script de secrets.
-
-```bash
-# 1. Secrets factices dans .env.secrets/ (hors Git) et .env copié de .env.example.
-#    À relancer après une mise à jour : il crée les secrets manquants sans rien écraser.
-python infra/gen-dev-secrets.py
-
-# 2. Démarrer la pile de démonstration depuis la racine du dépôt
-docker compose --profile demo up -d --wait
-
-# 3. Vérifier : db, valkey, garage, api, worker et caddy « healthy »,
-#    migrate « Exited (0) »
-docker compose --profile demo ps -a
-```
-
-Caddy construit la PWA dans son image (`infra/caddy/Dockerfile`, Node 26) : après une modification de `web/`, relancer avec `--build`. Ouvrir ensuite **`https://app.localhost:<HTTPS_PORT>`** dans Chrome (`https://app.localhost` si `HTTPS_PORT=443`, la valeur par défaut). Chrome résout `*.localhost` vers `127.0.0.1` ; `http://` redirige vers `https://`.
-
-**Certificat local.** Pour `*.localhost`, Caddy émet un certificat de son propre CA interne, que la machine ne connaît pas : Chrome affiche d'abord un avertissement, qu'on peut passer en développement. Pour l'éviter, approuver ce CA sur l'hôte. `docker compose exec caddy caddy trust` ne l'installe que dans le conteneur ; pour l'hôte, copier le certificat racine puis l'importer comme autorité de confiance :
-
-```bash
-docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt ./caddy-root.crt
-# Windows (PowerShell) : Import-Certificate -FilePath .\caddy-root.crt -CertStoreLocation Cert:\CurrentUser\Root
-# macOS : sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain caddy-root.crt
-# Linux (Chrome) : certutil -d sql:$HOME/.pki/nssdb -A -t C,, -n caddy-local -i caddy-root.crt
-```
-
-Le CA est gardé dans le volume `caddy-data` : à refaire après `docker compose down -v`. En démo réelle, `APP_HOST` et `MEDIA_HOST` sont de vrais domaines et Caddy obtient un certificat Let's Encrypt.
-
-Sur `APP_HOST`, Caddy sert la PWA, et relaie vers l'API `/v1/*`, `/healthz` et `/readyz` ; toute autre adresse sans extension renvoie `index.html` (routage côté client), un fichier absent renvoie 404. Sur `MEDIA_HOST` (`media.localhost`), il relaie vers Garage la seule lecture (`GET`, `HEAD`) des photos du bucket `S3_BUCKET` (`/<bucket>/<clé>`, 403 sans signature) ; tout autre chemin reçoit 404 et toute autre méthode 405.
-
-| Adresse | Réponse |
-|---|---|
-| `/healthz` | Vivacité : `{"status": "ok"}`, sans aucune dépendance |
-| `/readyz` | `{"status": "ready"}` si la base, Valkey, le bucket et le battement du worker (moins de 60 s) répondent, sinon 503 `{"status": "not_ready"}` |
-| `/v1/config` | Configuration publique : `demo_mode`, `env`, `model_version` |
-| `/metrics`, `/v1/ai/*` | Jamais relayées par Caddy (404) ; `/metrics` au format Prometheus sur le réseau Compose seulement (`http://api:8000/metrics`) |
-
-La documentation OpenAPI (`/docs`, `/redoc`, `/openapi.json`, absente quand `ENV=prod`) n'est plus relayée par Caddy : ces adresses servent la PWA. Elle reste servie par l'API sur le réseau Compose (`http://api:8000/docs`).
-
-En `ENV=demo` ou `prod`, l'API et le worker refusent de démarrer si un secret de l'inventaire manque dans `.env.secrets/` (le message nomme le secret). Tests de fumée, pile démarrée :
-- bord Caddy (chaque cas de la story 1.3 en HTTPS, certificat local non vérifié) : `python backend/scripts/smoke_edge.py` ;
-- `/readyz` (arrête puis relance tour à tour `db`, `valkey`, `garage` et `worker`) : `python backend/scripts/smoke_readyz.py`.
-
-Les deux scripts se connectent à `127.0.0.1` en HTTPS avec `APP_HOST` et `HTTPS_PORT` (environnement, sinon `.env`).
-
-Si les ports 80, 443, 5432 ou 3900 sont déjà pris sur la machine, changer `HTTP_PORT`, `HTTPS_PORT`, `DB_LOCAL_PORT` et `S3_LOCAL_PORT` dans `.env`.
-
-| Service | Rôle |
-|---|---|
-| `caddy` | Bord HTTPS : PWA et API sur `APP_HOST`, photos (Garage) sur `MEDIA_HOST` |
-| `api` | API FastAPI (rôle de base `teranga_app`, DML seulement) |
-| `worker` | Worker arq, même image que l'API |
-| `migrate` | `alembic upgrade head` avec le rôle `teranga_migrator`, puis s'arrête ; `api` et `worker` attendent sa réussite |
-| `db` | PostgreSQL 16 + PostGIS, port publié sur `127.0.0.1` seulement |
-| `valkey` | Valkey en AOF (file arq, limites de débit) |
-| `garage` | Stockage objet S3, un nœud, bucket privé par défaut |
-
-Les rôles `teranga_migrator` et `teranga_app` sont créés par `infra/db/initdb/20-roles.sh` à la création du volume de la base. Après un changement de secret de base, recréer les volumes : `docker compose --profile demo down -v`.
-
-**Backend sans Docker** (dans `backend/`, avec [uv](https://docs.astral.sh/uv/)) :
-
-```bash
-uv sync --frozen
-uv run ruff check .
-uv run pytest tests/unit
-```
-
-Tests d'intégration, pile démarrée : mots de passe dans `.env.secrets/`, port `DB_LOCAL_PORT` du `.env` (5432 par défaut).
-
-```bash
-# bash
-DB_LOCAL_PORT="$(sed -n 's/^DB_LOCAL_PORT=//p' ../.env)"; DB_LOCAL_PORT="${DB_LOCAL_PORT:-5432}"
-export TEST_APP_DATABASE_URL="postgresql://teranga_app:$(cat ../.env.secrets/db_app_password)@localhost:${DB_LOCAL_PORT}/terangacycle"
-export TEST_MIGRATOR_DATABASE_URL="postgresql://teranga_migrator:$(cat ../.env.secrets/db_migrator_password)@localhost:${DB_LOCAL_PORT}/terangacycle"
-# Stockage (Garage, port S3_LOCAL_PORT du .env, 3900 par défaut)
-S3_LOCAL_PORT="$(sed -n 's/^S3_LOCAL_PORT=//p' ../.env)"; S3_LOCAL_PORT="${S3_LOCAL_PORT:-3900}"
-S3_BUCKET="$(sed -n 's/^S3_BUCKET=//p' ../.env)"; S3_BUCKET="${S3_BUCKET:-terangacycle-photos}"
-export TEST_S3_ENDPOINT="http://127.0.0.1:${S3_LOCAL_PORT}" TEST_S3_BUCKET="${S3_BUCKET}"
-export TEST_S3_ACCESS_KEY_ID="$(cat ../.env.secrets/s3_access_key_id)" TEST_S3_SECRET_ACCESS_KEY="$(cat ../.env.secrets/s3_secret_access_key)"
-uv run pytest tests/integration
-```
+**Backend** (Windows, PowerShell, dans `api/`) — détails dans [`api/README.md`](api/README.md) :
 
 ```powershell
-# PowerShell
-$port = (Select-String -Path ..\.env -Pattern '^DB_LOCAL_PORT=(.+)$').Matches.Groups[1].Value
-if (-not $port) { $port = '5432' }
-$appPw = (Get-Content ..\.env.secrets\db_app_password -Raw).Trim()
-$migratorPw = (Get-Content ..\.env.secrets\db_migrator_password -Raw).Trim()
-$env:TEST_APP_DATABASE_URL = "postgresql://teranga_app:${appPw}@localhost:${port}/terangacycle"
-$env:TEST_MIGRATOR_DATABASE_URL = "postgresql://teranga_migrator:${migratorPw}@localhost:${port}/terangacycle"
-$s3Port = (Select-String -Path ..\.env -Pattern '^S3_LOCAL_PORT=(.+)$').Matches.Groups[1].Value
-if (-not $s3Port) { $s3Port = '3900' }
-$env:TEST_S3_ENDPOINT = "http://127.0.0.1:${s3Port}"
-$bucket = (Select-String -Path ..\.env -Pattern '^S3_BUCKET=(.+)$').Matches.Groups[1].Value
-if (-not $bucket) { $bucket = 'terangacycle-photos' }
-$env:TEST_S3_BUCKET = $bucket
-$env:TEST_S3_ACCESS_KEY_ID = (Get-Content ..\.env.secrets\s3_access_key_id -Raw).Trim()
-$env:TEST_S3_SECRET_ACCESS_KEY = (Get-Content ..\.env.secrets\s3_secret_access_key -Raw).Trim()
-uv run pytest tests/integration
+cd api
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+flask --app run seed-demo      # facultatif : données de démo marquées « Démo »
+python run.py                  # http://localhost:5000/api/health
 ```
 
-**PWA sans Docker** (dans `web/`, Node 26) : `npm ci`, `npm run dev` (serveur de développement sur le port 5173), `npm test`, `npm run build`. Détails dans [`web/README.md`](web/README.md).
+**Frontend** (dans `web/`) : `npm install` puis `npm run dev` (http://localhost:5173), avec un proxy Vite `/api → http://localhost:5000`.
 
-**Arrêter et tout effacer** (conteneurs et volumes) : `docker compose --profile demo down -v`.
-
-## Intégration continue
-
-Le workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) tourne sur chaque pull request vers `main` et chaque push sur `main` ; le job `audit` tourne aussi seul chaque lundi à 06:00 UTC (et à la demande, `workflow_dispatch`), pour voir une faille publiée après la fusion. Il ne demande aucun secret GitHub : les secrets de la pile sont générés à chaque exécution par `infra/gen-dev-secrets.py`. Cinq jobs :
-
-| Job | Vérifications |
-|---|---|
-| `backend` | `ruff check`, `ruff format --check`, `lint-imports` (contrats d'import), puis la pile Docker Compose démarrée et `pytest --cov` : tests unitaires, d'architecture et d'intégration, couverture d'au moins 60 % |
-| `web` | `npm run lint` (oxlint), `npm test` (Vitest), `npm run build` (Node 26) |
-| `edge` | après `backend` et `web` : image Caddy construite, pile démarrée, `smoke_edge.py` puis `smoke_readyz.py` |
-| `hygiene` | Gitleaks 8.30.1 (commits de la PR, tout l'historique sur `main`) avec [`.gitleaks.toml`](.gitleaks.toml) ; `scripts/ci/check_pinning.py` (images par `tag@sha256:`, actions par SHA de commit) ; `scripts/ci/check_repo_hygiene.py` (aucun document interne ni `.env` suivi, motifs de `.gitignore`, `LICENSE`, exceptions d'audit non expirées) |
-| `audit` | `pip-audit` 2.10.1 sur les dépendances d'exécution du backend (`uv export --locked --no-dev`), `npm audit --omit=dev` (gravité `high` ou plus), Trivy 0.76.2 sur les images `api` et `caddy` construites (failles `HIGH` et `CRITICAL` corrigeables, secrets laissés dans les images) |
-
-**Secrets et adresses Figma.** Gitleaks applique ses règles par défaut, plus la règle `figma-file-url` : une adresse `figma.com/design/…` (ou `file`, `proto`, `board`, `slides`, `deck`, `make`, `site`) suivie d'une clé de 22 caractères fait échouer `hygiene` (les placeholders `<clé>` ou `{key}` passent). Avant le balayage, le job vérifie que Gitleaks détecte bien une adresse Figma fabriquée. Les faux positifs connus sont listés dans `.gitleaks.toml`, chacun justifié. Gitleaks et Trivy sont téléchargés en version épinglée et vérifiés par leur somme SHA-256 avant extraction.
-
-**Exceptions d'audit datées.** Une vulnérabilité acceptée (pas de correctif, code non atteint) se déclare dans [`security/audit-exceptions.toml`](security/audit-exceptions.toml) : outil (`pip-audit`, `npm-audit` ou `trivy`), identifiant, raison (une ligne) et date d'expiration, au plus 90 jours plus tard. Les jobs en tirent `--ignore-vuln` pour pip-audit, le `.trivyignore` de Trivy et le filtre du rapport de `npm audit`. Le lendemain de la date d'expiration, la CI échoue : il faut corriger, ou renouveler l'exception en la justifiant de nouveau.
-
-**Mises à jour.** [Dependabot](.github/dependabot.yml) propose chaque semaine les mises à jour du backend (`uv`), du web (`npm`), des images de base (`docker`), des images de la pile Compose (`docker-compose`) et des actions (`github-actions`) ; mineures et correctifs sont groupés, et une version n'est proposée que 3 jours après sa publication.
-
-**Licence et signalement.** Code sous [GNU AGPL-3.0](LICENSE). Les vulnérabilités se signalent en privé, voir [SECURITY.md](SECURITY.md).
-
-**Contrats d'import** (`[tool.importlinter]` dans `backend/pyproject.toml`) :
-- `layers` : dans chaque module, `router` → `service` → `repository`, jamais l'inverse ;
-- `acyclic_siblings` : aucun cycle entre les modules de `app.modules` ;
-- `protected` : un module n'importe d'un autre que son `service`, et seulement selon les flèches permises (`missions` → `reports`, `auth` ; `reports` → `ai`, `auth` ; `lots` → `missions`, `auth` ; `notifications` → `auth`) ; `app.core` n'importe aucun module. `app.main`, `app.worker` et `app.reactions`, racines de composition, en sont exclus.
-
-Dans le web, `fetch` est interdit hors de `web/src/api/` et `web/src/offline/` (règle `no-restricted-globals` d'oxlint, `web/.oxlintrc.json`).
-
-**Tests d'intégration obligatoires.** Avec `REQUIRE_INTEGRATION=1` (posé par la CI), un test marqué `integration` qui serait ignoré faute de `TEST_APP_DATABASE_URL` ou `TEST_MIGRATOR_DATABASE_URL` échoue. Sans la variable, il est ignoré comme avant.
-
-**Reproduire la CI en local**, depuis la racine du dépôt :
-
-```bash
-# backend (dans backend/, pile démarrée et URL de test posées comme plus haut)
-cd backend
-uv sync --locked   # échoue si uv.lock n'est plus à jour de pyproject.toml
-uv run ruff check . && uv run ruff format --check . && uv run lint-imports
-uv run ruff check --config pyproject.toml ../scripts/ci && uv run ruff format --config pyproject.toml --check ../scripts/ci
-REQUIRE_INTEGRATION=1 uv run pytest --cov
-cd ..
-
-# web (dans web/, Node 26)
-cd web && npm ci && npm run lint && npm test && npm run build && cd ..
-
-# edge : comme la CI (qui appelle python3 ; sous Windows, `python`)
-python3 infra/gen-dev-secrets.py
-docker compose --profile demo up -d --build --wait --wait-timeout 300
-python3 backend/scripts/smoke_edge.py
-python3 backend/scripts/smoke_readyz.py
-docker compose --profile demo down -v   # efface aussi les volumes, comme en fin de job
-
-# hygiene : scripts en bibliothèque standard, puis Gitleaks (image officielle)
-python3 scripts/ci/check_pinning.py && python3 scripts/ci/check_repo_hygiene.py
-docker run --rm -v "$PWD:/repo:ro" \
-  zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-  git --no-banner --redact --config /repo/.gitleaks.toml /repo
-
-# audit : backend (dans backend/) et web (dans web/)
-uv export --locked --no-dev --no-emit-project --format requirements-txt -o /tmp/requirements.txt
-uvx pip-audit==2.10.1 --disable-pip --strict -r /tmp/requirements.txt
-npm audit --omit=dev --audit-level=high
-```
-
-**Protection de la branche `main`** (décisions du 24/11/2026, stories 1.4 et 1.5) : pull request obligatoire (sans approbation exigée), contrôles `backend`, `web`, `edge`, `hygiene` et `audit` obligatoires, force push et suppression de la branche interdits ; l'administratrice en est exemptée (`enforce_admins: false`). À appliquer une fois la CI verte sur une PR, par une personne administratrice du dépôt (`gh` remplace `{owner}/{repo}` par le dépôt courant ; `app_id` 15368 est GitHub Actions, seule source acceptée pour ces contrôles). `strict: false` permet de fusionner une PR qui n'est pas rebasée sur le dernier `main` : les fusions se font en local, depuis un `main` à jour, une fois la CI verte.
-
-```bash
-gh api -X PUT repos/{owner}/{repo}/branches/main/protection \
-  -H "Accept: application/vnd.github+json" \
-  --input - <<'EOF'
-{
-  "required_status_checks": {
-    "strict": false,
-    "checks": [
-      { "context": "backend", "app_id": 15368 },
-      { "context": "web", "app_id": 15368 },
-      { "context": "edge", "app_id": 15368 },
-      { "context": "hygiene", "app_id": 15368 },
-      { "context": "audit", "app_id": 15368 }
-    ]
-  },
-  "enforce_admins": false,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 0,
-    "dismiss_stale_reviews": false,
-    "require_code_owner_reviews": false
-  },
-  "restrictions": null,
-  "allow_force_pushes": false,
-  "allow_deletions": false
-}
-EOF
-```
-
-**Réglages de sécurité du dépôt** (story 1.5), par une personne administratrice : secret scanning et push protection, puis signalement privé des vulnérabilités (le canal de [SECURITY.md](SECURITY.md)).
-
-```bash
-gh api -X PATCH repos/{owner}/{repo} \
-  -H "Accept: application/vnd.github+json" \
-  --input - <<'EOF'
-{
-  "security_and_analysis": {
-    "secret_scanning": { "status": "enabled" },
-    "secret_scanning_push_protection": { "status": "enabled" }
-  }
-}
-EOF
-gh api -X PUT repos/{owner}/{repo}/private-vulnerability-reporting
-```
+Le contrat entre les deux est dans [`docs/api-contract.md`](docs/api-contract.md).
 
 ## Documentation
 
 | Document | Contenu |
 |---|---|
-| [📋 Cahier des charges](docs/cahier-des-charges.md) | Vision, acteurs, périmètre du MVP, 22 user stories, exigences non fonctionnelles, planning, risques, indicateurs d'impact, pitch |
-| [🛠️ Dossier technique](docs/dossier-technique.md) | Architecture, modèle de données (SQL), API REST (38 endpoints), conception IA, sécurité, infrastructure, PWA hors-ligne, CI/CD |
+| [🔌 Contrat d'API](docs/api-contract.md) | Routes `/api/*`, formats JSON, statuts, codes d'erreur : la référence partagée frontend / backend |
+| [⚙️ Backend Flask](api/README.md) | Architecture, installation, commandes, tests, IA, risques |
+| [📋 Cahier des charges](docs/cahier-des-charges.md) | Vision, acteurs, user stories, exigences, planning, risques, pitch (version initiale) |
+| [🛠️ Dossier technique](docs/dossier-technique.md) | Architecture cible d'origine (FastAPI, PostGIS) — remplacée pour le hackathon par Flask + SQLite |
 
 ## Organisation du dépôt
 
 ```
 terangacycle-ai/
-├── backend/   API FastAPI (à venir)
-├── web/       PWA React + TypeScript (à venir)
-├── ml/        Entraînement, export ONNX, fiche du modèle (à venir)
-├── infra/     Docker Compose, Caddyfile, Terraform (à venir)
-├── scripts/   Contrôles de la CI (scripts/ci/, bibliothèque standard Python)
+├── api/       Backend Flask + SQLite + service IA (MVP)
+├── web/       Frontend React
+├── ml/        Modèle IA (réservé à l'après-hackathon)
+├── scripts/   Contrôles d'hygiène du dépôt (scripts/ci/)
 ├── security/  Exceptions d'audit datées
-└── docs/      Cahier des charges et dossier technique
+└── docs/      Contrat d'API, cahier des charges, dossier technique
 ```
 
 ## Feuille de route
 
 - [x] Cahier des charges et dossier technique
-- [ ] Squelette du dépôt, CI, `docker compose up` fonctionnel
+- [x] Backend Flask : boucle signalement → validation → mission → preuve → kilos vérifiés
 - [ ] Jeu de photos locales étiqueté et modèle de base évalué
 - [ ] MVP : signalement, classification, carte, missions, tableau de bord, hors-ligne
 - [ ] Pilote terrain dans un quartier

@@ -29,11 +29,3 @@ description = "Empreintes SHA-256 du manifeste BMad"
 condition = "AND"
 paths = ['''^_bmad/_config/files-manifest\.csv$''']
 regexes = ['''^[0-9a-f]{64}$''']
-
-# Mots de passe factices des tests de configuration (`# noqa: S105`), inventés pour ces
-# tests et sans usage réel (règle generic-api-key).
-[[allowlists]]
-description = "Mots de passe factices de backend/tests/unit/test_config.py"
-condition = "AND"
-paths = ['''^backend/tests/unit/test_config\.py$''']
-regexes = ['''^(?:app-pw-Zx9|migrator-pw-Qk4)$''']

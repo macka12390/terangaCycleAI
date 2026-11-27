@@ -43,6 +43,13 @@ TerangaCycle AI/
 # Modèles et bases locales
 models/
 *.sqlite
+# … sauf le paquet des modèles SQLAlchemy du backend Flask.
+!api/app/models/
+
+# Backend Flask (api/) : base SQLite, clé de démo, poids IA et photos reçues restent locaux.
+api/instance/
+api/uploads/
+*.db
 
 # Réglages personnels
 .claude/settings.local.json

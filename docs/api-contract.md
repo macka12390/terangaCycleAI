@@ -1,0 +1,415 @@
+# Contrat d'API — TerangaCycle AI (MVP hackathon)
+
+Contrat partagé entre le frontend React et le backend Flask (`api/`).
+Toute modification de ce fichier se fait **à deux** : le backend s'engage à respecter exactement ces formats.
+
+- Base : `http://localhost:5000/api`
+- Recommandé côté frontend : un proxy Vite `/api → http://localhost:5000` (pas de CORS, les URL de photos relatives marchent, et le téléphone n'a qu'une seule origine à joindre).
+
+```js
+// vite.config.js
+server: { proxy: { '/api': 'http://localhost:5000' } }
+```
+
+## 1. Conventions
+
+### Enveloppe de réponse
+
+Succès :
+
+```json
+{ "success": true, "report": { ... } }
+```
+
+Erreur (toujours ce format, message en français lisible par l'utilisateur) :
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_TRANSITION",
+    "message": "Ce signalement a déjà été traité.",
+    "details": { "status": "approved" }
+  }
+}
+```
+
+| HTTP | `code` | Quand |
+|---|---|---|
+| 400 | `VALIDATION_ERROR` | Champ manquant ou invalide (`details.field` indique lequel) |
+| 401 | `UNAUTHORIZED` | Jeton absent, invalide ou expiré |
+| 403 | `FORBIDDEN` | Rôle non autorisé ou ressource d'un autre utilisateur |
+| 403 | `COLLECTOR_NOT_VERIFIED` | Collecteur non vérifié qui tente d'accepter une mission |
+| 404 | `NOT_FOUND` | Ressource ou route inconnue |
+| 409 | `INVALID_TRANSITION` | Le statut actuel ne permet pas l'opération |
+| 409 | `MISSION_ALREADY_TAKEN` | Mission déjà acceptée par un autre collecteur |
+| 413 | `FILE_TOO_LARGE` | Photo de plus de 8 Mo |
+| 415 | `UNSUPPORTED_FILE` | Fichier qui n'est pas une image JPEG, PNG ou WebP |
+| 500 | `INTERNAL_ERROR` | Erreur inattendue |
+
+### Authentification de démonstration
+
+Pas de mot de passe ni d'OTP : on choisit un compte de démonstration et on reçoit un jeton signé (valable 7 jours).
+**Ce n'est pas une sécurité de production.**
+
+```
+Authorization: Bearer <token>
+```
+
+### Dates, catégories, photos
+
+- Dates en ISO 8601 UTC : `"2026-11-26T12:00:00Z"`.
+- Catégories de déchet (`category`) : `plastic`, `metal`, `paper`, `glass`, `organic`.
+  Libellés : Plastique, Métal, Papier et carton, Verre, Déchets organiques.
+- Photos : URL relatives (`"/api/uploads/reports/3f2a….jpg"`). Le serveur ré-encode chaque photo en JPEG (max 1600 px) et **supprime toutes les métadonnées EXIF** (dont le GPS de l'appareil).
+- Envoi des photos en `multipart/form-data`, champ `photo`.
+
+## 2. Statuts
+
+### Signalement (`report.status`)
+
+| Valeur | Libellé | Passage |
+|---|---|---|
+| `pending` | En attente de modération | Création |
+| `approved` | Validé — mission disponible | Admin valide |
+| `rejected` | Rejeté | Admin rejette (**ne devient jamais une mission**) |
+| `assigned` | Collecte en cours | Un collecteur accepte la mission |
+| `collected` | Collecté — preuve en vérification | Le collecteur envoie sa preuve |
+| `completed` | Terminé — kilos vérifiés | Admin vérifie la preuve |
+
+### Mission (`mission.status`)
+
+`available` → `accepted` → `completed`.
+`accepted` → `available` : mission **libérée** (`/release`).
+`available` ou `accepted` → `cancelled` : mission **annulée** par l'admin (`/cancel`) ; le signalement passe alors à `rejected`.
+Si la preuve est **rejetée**, la mission repasse à `accepted` : le collecteur renvoie une nouvelle preuve.
+
+### Preuve (`proof.status`)
+
+`pending` → `verified` | `rejected` | `disputed` ; `disputed` → `verified` | `rejected`.
+**Seules les preuves `verified` comptent dans les kilos.**
+
+```
+Report:  pending ─┬─► approved ─► assigned ─► collected ─► completed
+                  └─► rejected                  ▲   │
+                                                │   └─(preuve rejetée)─► assigned
+Mission:          available ─► accepted ─► completed ─(preuve rejetée)─► accepted
+Proof:                                      pending ─► verified | rejected | disputed
+```
+
+## 3. Objets
+
+### `user`
+
+```json
+{ "id": 3, "name": "Collecteur Démo (vérifié)", "role": "collector",
+  "is_verified": true, "is_demo": true, "demo_login": "collecteur-demo" }
+```
+
+`role` : `citizen`, `admin` ou `collector`.
+
+### `ai` (résultat de classification)
+
+```json
+{
+  "mode": "prototype",
+  "category": "plastic",
+  "confidence": 0.82,
+  "suggested_category": "plastic",
+  "threshold": 0.6,
+  "model_version": "clip-vit-base-patch32-zeroshot-v1",
+  "scores": { "plastic": 0.82, "metal": 0.05, "paper": 0.06, "glass": 0.04, "organic": 0.03 },
+  "label": "Suggestion d'un classificateur IA expérimental (prototype)"
+}
+```
+
+- `mode` : `model` (modèle évalué), `prototype` (classificateur expérimental) ou `manual` (aucune IA active : `category`, `confidence`, `scores` valent `null`).
+- **`suggested_category`** = `category` si `confidence ≥ threshold` (60 %), sinon `null`.
+  Le frontend ne présélectionne **que** `suggested_category`. Sous 60 %, rien n'est présélectionné.
+- Afficher `label` à côté du résultat : le jury doit voir d'où vient la proposition.
+
+### `report`
+
+```json
+{
+  "id": 12,
+  "tracking_number": "TC-2026-7KQ4MX",
+  "status": "pending",
+  "status_label": "En attente de modération",
+  "photo_url": "/api/uploads/reports/3f2a9c….jpg",
+  "latitude": 14.7167,
+  "longitude": -17.4677,
+  "accuracy_m": 12.0,
+  "comment": "Dépôt sauvage près de la route",
+  "voice_url": "/api/uploads/voices/8d1e….webm",
+  "ai": { "...": "objet ai, sans threshold ni scores" },
+  "citizen_category": "plastic",
+  "final_category": null,
+  "category": "plastic",
+  "rejection_reason": null,
+  "moderated_by": null,
+  "moderated_at": null,
+  "mission_id": null,
+  "user_id": 1,
+  "is_demo": false,
+  "created_at": "2026-11-26T12:00:00Z",
+  "updated_at": "2026-11-26T12:00:00Z"
+}
+```
+
+`voice_url` : note vocale du citoyen (wolof ou français), ou `null`. À lire avec `<audio controls src={voice_url}>` dans la modération.
+
+`category` est la meilleure catégorie connue, pour l'affichage : `final_category` (décidée par l'admin), sinon `citizen_category`, sinon `ai.suggested_category`.
+
+`is_demo: true` : donnée de démonstration chargée par `flask seed-demo`. **À afficher avec un badge « Démo ».**
+
+### `mission`
+
+```json
+{
+  "id": 4,
+  "status": "accepted",
+  "status_label": "Acceptée",
+  "report_id": 12,
+  "tracking_number": "TC-2026-7KQ4MX",
+  "latitude": 14.7167,
+  "longitude": -17.4677,
+  "waste_type": "plastic",
+  "photo_before_url": "/api/uploads/reports/3f2a9c….jpg",
+  "report_comment": "Dépôt sauvage près de la route",
+  "collector": { "id": 3, "name": "Collecteur Démo (vérifié)" },
+  "accepted_at": "2026-11-26T12:10:00Z",
+  "started_at": null,
+  "completed_at": null,
+  "created_at": "2026-11-26T12:05:00Z",
+  "proof": null,
+  "is_demo": false
+}
+```
+
+`proof` : la dernière preuve de la mission (objet `proof` ci-dessous) ou `null`.
+
+### `proof`
+
+```json
+{
+  "id": 7,
+  "mission_id": 4,
+  "status": "pending",
+  "status_label": "En attente de vérification",
+  "photo_after_url": "/api/uploads/proofs/91bc….jpg",
+  "weight_kg": 23.5,
+  "comment": "Sacs déposés au point de tri",
+  "collector": { "id": 3, "name": "Collecteur Démo (vérifié)" },
+  "verified_by": null,
+  "verified_at": null,
+  "review_note": null,
+  "created_at": "2026-11-26T12:40:00Z",
+  "report": {
+    "id": 12, "tracking_number": "TC-2026-7KQ4MX",
+    "waste_type": "plastic", "photo_before_url": "/api/uploads/reports/3f2a9c….jpg"
+  },
+  "is_demo": false
+}
+```
+
+## 4. Routes
+
+Légende accès : 🌐 public · 👤 citoyen (jeton facultatif) · 🛡️ admin · 🚛 collecteur.
+
+### Système
+
+| Méthode | Route | Accès | Réponse |
+|---|---|---|---|
+| GET | `/api/health` | 🌐 | `{ success, status: "ok", ai_mode, version }` |
+| GET | `/api/config` | 🌐 | `{ success, config: { categories, report_statuses, mission_statuses, proof_statuses, ai, demo_mode, max_upload_mb } }` |
+
+`config.categories` = `[{ "value": "plastic", "label": "Plastique" }, …]` (même forme pour les statuts).
+
+### Authentification de démonstration
+
+| Méthode | Route | Accès | Corps | Réponse |
+|---|---|---|---|---|
+| GET | `/api/auth/demo-accounts` | 🌐 | — | `{ success, accounts: [user] }` |
+| POST | `/api/auth/demo` | 🌐 | `{ "login": "admin-demo" }` | `{ success, token, user }` |
+| GET | `/api/auth/me` | jeton | — | `{ success, user }` |
+
+Comptes : `citoyen-demo`, `admin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
+
+### Classification IA
+
+| Méthode | Route | Accès | Corps | Réponse |
+|---|---|---|---|---|
+| POST | `/api/ai/classify` | 🌐 | multipart `photo` | `{ success, ai }` |
+
+Aperçu sans rien enregistrer : le citoyen voit la proposition et peut la corriger **avant** d'envoyer.
+`POST /api/reports` reclassifie côté serveur (la valeur enregistrée est celle du serveur, jamais celle envoyée par le client) ; si les mêmes octets ont déjà été classifiés, le résultat est réutilisé.
+
+### Signalements
+
+| Méthode | Route | Accès | Réponse |
+|---|---|---|---|
+| POST | `/api/reports` | 👤 | 201 `{ success, report, ai, duplicate: false }` |
+| GET | `/api/reports` | 🛡️ tous · 👤 avec jeton : les siens | `{ success, reports: [report], total }` |
+| GET | `/api/reports/<id>` | 🛡️ · auteur | `{ success, report, mission, history }` |
+| GET | `/api/reports/track/<tracking_number>` | 🌐 | `{ success, tracking }` |
+| PATCH | `/api/reports/<id>/moderate` | 🛡️ | `{ success, report, mission }` |
+
+**`POST /api/reports`** — `multipart/form-data` :
+
+| Champ | Obligatoire | Règle |
+|---|---|---|
+| `photo` | oui | JPEG, PNG ou WebP, ≤ 8 Mo |
+| `latitude` | oui | -90 à 90 |
+| `longitude` | oui | -180 à 180 |
+| `accuracy_m` | non | ≥ 0 (précision GPS en mètres) |
+| `comment` | non | ≤ 500 caractères |
+| `citizen_category` | non | une catégorie : choix ou correction du citoyen |
+| `client_uuid` | non | UUID généré par le client (anti-doublon hors ligne) |
+| `voice` | non | Note vocale ≤ 2 Mo : WebM, Ogg, MP4/M4A, WAV ou MP3, reconnue par son contenu (le nom `note.webm` suffit). Invalide → 415, trop lourde → 413, et rien n'est enregistré |
+
+Si `client_uuid` a déjà été reçu : **200** avec le signalement existant et `"duplicate": true` (aucun doublon créé).
+
+**`GET /api/reports`** — filtres : `status`, `category`, `limit` (défaut 50, max 200), `offset`. Tri : plus récent d'abord.
+
+**`GET /api/reports/<id>`** — `history` = journal des décisions :
+
+```json
+[{ "entity": "report", "entity_label": "Signalement", "entity_id": 12,
+   "from_status": null, "from_status_label": null,
+   "to_status": "pending", "to_status_label": "En attente de modération",
+   "summary": "Signalement : En attente de modération",
+   "actor": null, "note": null, "at": "2026-11-26T12:00:00Z" }]
+```
+
+Afficher `summary` (ou `to_status_label`), jamais `to_status` brut.
+
+**`GET /api/reports/track/<tracking_number>`** — suivi public, sans photo ni position :
+
+```json
+{ "success": true, "tracking": {
+  "tracking_number": "TC-2026-7KQ4MX", "status": "approved",
+  "status_label": "Validé — mission disponible", "category": "plastic",
+  "created_at": "…", "updated_at": "…",
+  "history": [{ "status": "pending", "label": "En attente de modération", "at": "…" }] } }
+```
+
+**`PATCH /api/reports/<id>/moderate`** — JSON :
+
+```json
+{ "action": "approve", "final_category": "plastic" }
+{ "action": "reject", "reason": "Photo floue, dépôt non identifiable" }
+{ "action": "correct", "final_category": "metal" }
+```
+
+- `approve` : seulement depuis `pending`. Crée la mission (`available`). `final_category` facultatif si une catégorie est déjà connue (correction admin, choix du citoyen, ou suggestion IA ≥ 60 %), sinon 400.
+- `reject` : seulement depuis `pending`. `reason` facultatif (≤ 500).
+- `correct` : change `final_category` tant que les kilos ne sont pas vérifiés (pas sur `rejected` ni `completed`).
+- Valider deux fois → 409 `INVALID_TRANSITION`.
+
+### Missions
+
+| Méthode | Route | Accès | Réponse |
+|---|---|---|---|
+| GET | `/api/missions` | 🚛 · 🛡️ | `{ success, missions: [mission] }` |
+| GET | `/api/missions/<id>` | 🚛 (disponible ou la sienne) · 🛡️ | `{ success, mission }` |
+| POST | `/api/missions/<id>/accept` | 🚛 vérifié | `{ success, mission }` |
+| POST | `/api/missions/<id>/start` | 🚛 titulaire | `{ success, mission }` |
+| POST | `/api/missions/<id>/proof` | 🚛 titulaire | 201 `{ success, proof, mission }` |
+| POST | `/api/missions/<id>/complete` | 🚛 titulaire | alias de `/proof` (mêmes champs) |
+| POST | `/api/missions/<id>/release` | 🚛 titulaire · 🛡️ | `{ success, mission }` |
+| POST | `/api/missions/<id>/cancel` | 🛡️ | `{ success, mission }` |
+
+**`GET /api/missions`** — collecteur : `?scope=available` (défaut) ou `?scope=mine` (ses missions : historique). Admin : toutes, filtre `?status=`.
+
+**`POST /api/missions/<id>/accept`** — sans corps. Collecteur non vérifié → 403 `COLLECTOR_NOT_VERIFIED`. Déjà prise → 409 `MISSION_ALREADY_TAKEN`. L'acceptation est atomique : deux collecteurs simultanés, un seul gagne.
+
+**`POST /api/missions/<id>/start`** — début d'intervention (facultatif) : renseigne `started_at`.
+
+**`POST /api/missions/<id>/proof`** — `multipart/form-data` :
+
+| Champ | Obligatoire | Règle |
+|---|---|---|
+| `photo` | oui | photo après collecte |
+| `weight_kg` | oui | nombre > 0 et ≤ 10 000 (virgule ou point acceptés) |
+| `comment` | non | ≤ 500 caractères |
+
+Fin d'intervention : mission → `completed`, signalement → `collected`, preuve → `pending`. **Les kilos ne comptent pas encore.**
+
+**`POST /api/missions/<id>/release`** — JSON facultatif `{ "reason": "Acceptée par erreur" }`. Mission `accepted` sans preuve en attente → `available` (collecteur retiré) ; signalement `assigned` → `approved`. Le collecteur titulaire ou un admin. Sinon 409.
+
+**`POST /api/missions/<id>/cancel`** — admin, JSON facultatif `{ "reason": "Dépôt déjà enlevé" }`. Mission `available` ou `accepted` → `cancelled` ; signalement → `rejected` avec `rejection_reason = "Mission annulée : <motif>"`. Impossible une fois la preuve envoyée (vérifier ou rejeter la preuve d'abord) → 409.
+
+### Preuves
+
+| Méthode | Route | Accès | Réponse |
+|---|---|---|---|
+| GET | `/api/proofs` | 🛡️ toutes · 🚛 les siennes | `{ success, proofs: [proof] }` |
+| PATCH | `/api/proofs/<id>/verify` | 🛡️ | `{ success, proof, mission, report }` |
+
+Filtre : `?status=pending`.
+
+```json
+{ "decision": "verified" }
+{ "decision": "rejected", "note": "Le dépôt est encore visible sur la photo" }
+{ "decision": "disputed", "note": "Poids incohérent avec la photo" }
+```
+
+- `verified` : signalement → `completed`, **les kilos sont comptés**.
+- `rejected` : mission → `accepted`, signalement → `assigned` ; le collecteur doit renvoyer une preuve.
+- `disputed` : en attente d'arbitrage, non comptée ; peut ensuite être `verified` ou `rejected`.
+
+### Tableau de bord
+
+| Méthode | Route | Accès | Réponse |
+|---|---|---|---|
+| GET | `/api/dashboard/stats` | 🛡️ | `{ success, stats }` |
+
+Paramètre : `include_demo` (`true` par défaut ; `false` pour exclure les données de démonstration).
+Tout est calculé à la volée depuis la base.
+
+```json
+{
+  "reports": { "total": 12, "pending": 3, "validated": 7, "rejected": 2, "by_status": { "pending": 3, "...": 0 } },
+  "missions": { "available": 1, "accepted": 2, "completed": 3, "cancelled": 0 },
+  "collections": { "completed": 3, "verified": 2 },
+  "proofs": { "pending": 1, "disputed": 0, "verified": 2, "rejected": 1 },
+  "verified_kg": 61.5,
+  "kg_by_category": [{ "category": "plastic", "label": "Plastique", "kg": 41.5 }, "… les 5 catégories, 0 inclus"],
+  "reports_by_category": [{ "category": "plastic", "label": "Plastique", "count": 5 }, "…"],
+  "collections_timeline": [{ "date": "2026-11-26", "verified_kg": 23.5, "collections": 1 }, "… 14 derniers jours"],
+  "recent_activity": [{ "entity": "proof", "entity_label": "Preuve", "entity_id": 7, "report_id": 12,
+                         "tracking_number": "TC-2026-7KQ4MX", "from_status": "pending",
+                         "from_status_label": "En attente de vérification", "to_status": "verified",
+                         "to_status_label": "Vérifiée", "summary": "Preuve : Vérifiée",
+                         "actor": "Admin Démo", "note": null, "at": "…" }],
+  "ai": { "by_mode": { "model": 0, "prototype": 8, "manual": 4 },
+          "evaluated": 6, "agreement_rate": 0.83 },
+  "demo": { "included": true, "demo_reports": 9 }
+}
+```
+
+- `reports.validated` = signalements passés par la validation (`approved`, `assigned`, `collected`, `completed`).
+- `collections.completed` = missions terminées (preuve envoyée) ; `collections.verified` = preuves vérifiées.
+- `ai.agreement_rate` : part des signalements validés où la proposition IA (≥ 60 %) égale la catégorie finale. Calculée **uniquement** sur les modes `model` et `prototype` ; `null` s'il n'y a rien à évaluer. Le mode `manual` n'est jamais compté comme une performance IA.
+
+### Photos
+
+| Méthode | Route | Accès |
+|---|---|---|
+| GET | `/api/uploads/<chemin>` | 🌐 (photos `reports/`, `proofs/`, notes vocales `voices/` avec le bon type audio) |
+
+## 5. Exemple : la boucle complète en `curl`
+
+```bash
+API=http://localhost:5000/api
+ADMIN=$(curl -s -X POST $API/auth/demo -H 'Content-Type: application/json' -d '{"login":"admin-demo"}' | python -c "import sys,json;print(json.load(sys.stdin)['token'])")
+COLL=$(curl -s -X POST $API/auth/demo -H 'Content-Type: application/json' -d '{"login":"collecteur-demo"}' | python -c "import sys,json;print(json.load(sys.stdin)['token'])")
+
+curl -s -X POST $API/reports -F photo=@depot.jpg -F latitude=14.7167 -F longitude=-17.4677 -F comment="Près de la route"
+curl -s -X PATCH $API/reports/1/moderate -H "Authorization: Bearer $ADMIN" -H 'Content-Type: application/json' -d '{"action":"approve","final_category":"plastic"}'
+curl -s -X POST $API/missions/1/accept -H "Authorization: Bearer $COLL"
+curl -s -X POST $API/missions/1/proof -H "Authorization: Bearer $COLL" -F photo=@apres.jpg -F weight_kg=23.5
+curl -s -X PATCH $API/proofs/1/verify -H "Authorization: Bearer $ADMIN" -H 'Content-Type: application/json' -d '{"decision":"verified"}'
+curl -s $API/dashboard/stats -H "Authorization: Bearer $ADMIN"
+```

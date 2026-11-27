@@ -123,6 +123,8 @@ Compte réel : `"is_demo": false`, `"demo_login": null`, `"phone": "+22177123456
 
 `organisation` : `{ id, name, is_demo }` ou `null` (citoyen, super admin).
 
+`sms_notifications` : la personne accepte (true) ou non les SMS de suivi (étape 4).
+
 Champs de gestion (étape 2) : `role_label`, `is_active`, `suspended_at`, `suspended_reason`, `created_at`, `last_login_at`.
 
 ### `ai` (résultat de classification)
@@ -252,6 +254,7 @@ Légende accès : 🌐 public · 👤 citoyen (jeton facultatif) · 🛡️ admi
 | GET | `/api/auth/demo-accounts` | 🌐 | — | `{ success, accounts: [user] }` |
 | POST | `/api/auth/demo` | 🌐 | `{ "login": "admin-demo" }` | `{ success, token, user }` |
 | GET | `/api/auth/me` | jeton | — | `{ success, user }` |
+| PATCH | `/api/auth/me` | jeton (compte réel) | `{ "name"?, "sms_notifications"? }` | `{ success, user }` (403 `DEMO_ACCOUNT_LOCKED` pour un compte de démo) |
 
 Comptes : `citoyen-demo`, `admin-demo` (organisation principale), `admin-pikine-demo` (UCG Pikine-Guédiawaye), `superadmin-demo`, `collecteur-demo` (vérifié), `collecteur-non-verifie` (pour montrer le refus).
 `demo-accounts` renvoie aussi `demo_enabled` ; s'il vaut `false`, n'afficher que la connexion par SMS.
@@ -471,6 +474,28 @@ Une organisation (commune, UCG, ONG, entreprise de collecte) traite les dépôts
 - Filtres super admin : `GET /api/reports?organisation_id=2` (ou `none` pour les hors zone), `GET /api/accounts?organisation_id=2`, `GET /api/dashboard/stats?organisation_id=2`.
 - Comptes : un admin crée des collecteurs **de son organisation** ; le super admin doit préciser `organisation_id` pour un admin ou un collecteur (création ou changement de rôle) et peut déplacer un compte (`PATCH /api/accounts/<id>` avec `organisation_id`).
 - Données d'avant l'étape 3 : rattachées au premier démarrage (organisation principale « Dakar », ou zone plus précise selon la position).
+
+### Notifications SMS (étape 4)
+
+Envoyées par le même fournisseur que les codes de connexion (`SMS_PROVIDER` ; en mode test, rien ne part : le SMS s'affiche dans le terminal du backend).
+
+| Événement | Destinataire | Message (préfixe « TerangaCycle : ») |
+|---|---|---|
+| Signalement validé | citoyen (compte connecté) | « votre signalement TC-… est validé. Une mission de collecte est créée. Merci ! » |
+| Signalement rejeté | citoyen | « … n'a pas été retenu. Motif : … » |
+| Preuve vérifiée | citoyen | « le dépôt TC-… a été collecté : 23,5 kg vérifiés. Merci pour votre signalement ! » |
+| Nouvelle mission | collecteurs vérifiés et actifs **de l'organisation** du dépôt | « nouvelle mission (plastique), dépôt TC-… » |
+| Preuve vérifiée, refusée, contestée | collecteur | kilos comptés, motif du refus, examen en cours |
+| Mission retirée ou annulée par un admin | collecteur | « … vous a été retirée / est annulée. Motif : … » |
+
+- Le SMS est enregistré dans la même transaction que l'action (une action refusée n'envoie rien), puis envoyé juste après la réponse. Un échec du fournisseur ne fait jamais échouer l'action : le SMS reste « en échec » et `flask --app run send-notifications` le relance (3 essais).
+- Pas de SMS pour un compte sans numéro (comptes de démo, signalement anonyme) ni pour qui a coupé ses SMS : la ligne apparaît « non envoyée » (`no_phone`, `opted_out`) dans le journal.
+
+| Méthode | Route | Accès | Réponse |
+|---|---|---|---|
+| GET | `/api/notifications` | 🛡️ (son organisation) · super admin (tout) | `{ success, provider, notifications: [{ kind, kind_label, recipient, recipient_role, phone, message, status, detail, attempts, tracking_number, created_at, sent_at }] }` |
+
+`phone` est toujours masqué (`+221 77 *** ** 01`). `status` : `pending`, `sent`, `failed`, `skipped`. Filtre : `?status=`.
 
 ### Photos
 

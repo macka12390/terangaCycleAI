@@ -16,6 +16,7 @@ from app.constants import (
 )
 from app.extensions import db
 from app.models import Mission, Report, StatusEvent, User
+from app.services import notifications
 from app.services.auth import is_admin
 from app.services.organisations import (
     ensure_report_in_scope,
@@ -274,6 +275,8 @@ def _approve(report: Report, admin: User, data: Mapping) -> tuple[Report, Missio
         to_status=MissionStatus.AVAILABLE,
         actor=admin,
     )
+    notifications.report_approved(report)
+    notifications.mission_available(report)
     db.session.commit()
     return report, mission
 
@@ -300,6 +303,7 @@ def _reject(report: Report, admin: User, data: Mapping) -> Report:
         actor=admin,
         note=reason,
     )
+    notifications.report_rejected(report, reason)
     db.session.commit()
     return report
 

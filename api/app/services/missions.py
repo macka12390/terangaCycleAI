@@ -13,6 +13,7 @@ from app.constants import (
 )
 from app.extensions import db
 from app.models import CollectionProof, Mission, Report, User
+from app.services import notifications
 from app.services.auth import is_admin
 from app.services.organisations import ensure_report_in_scope, report_scope
 from app.services.events import record_event, transition
@@ -213,7 +214,11 @@ def release(mission_id: int, user: User, data: Mapping) -> Mission:
         ensure_report_in_scope(user, mission.report)
     else:
         _ensure_owner(mission, user)
-    _release(mission, user, parse_text(data, "reason"))
+    previous_collector = mission.collector
+    reason = parse_text(data, "reason")
+    _release(mission, user, reason)
+    if previous_collector is not None and previous_collector.id != user.id:
+        notifications.mission_released(mission, previous_collector, reason)
     db.session.commit()
     return mission
 
@@ -241,6 +246,7 @@ def cancel(mission_id: int, admin: User, data: Mapping) -> Mission:
     ensure_report_in_scope(admin, mission.report)
     reason = parse_text(data, "reason")
     previous = mission.status
+    previous_collector = mission.collector
     report_previous = mission.report.status
     now = utcnow()
     if not transition(
@@ -285,6 +291,7 @@ def cancel(mission_id: int, admin: User, data: Mapping) -> Mission:
         actor=admin,
         note=rejection,
     )
+    notifications.mission_cancelled(mission, previous_collector, reason)
     db.session.commit()
     return mission
 

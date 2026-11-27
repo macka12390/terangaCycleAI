@@ -13,6 +13,8 @@ import type {
   Tracking,
   User,
   AuditEntry,
+  NotificationEntry,
+  NotificationStatus,
   Organisation,
   OrganisationKind,
   Role,
@@ -284,4 +286,21 @@ export async function updateOrganisation(
 export async function reassignReport(reportId: number, organisationId: number): Promise<Report> {
   return (await http.patch(`/reports/${reportId}/organisation`, { organisation_id: organisationId })).data
     .report
+}
+
+// --- Notifications SMS et compte (étape 4) -------------------------------------------------
+
+export async function updateMe(changes: { name?: string; sms_notifications?: boolean }): Promise<User> {
+  return (await http.patch('/auth/me', changes)).data.user
+}
+
+export interface NotificationLog {
+  notifications: NotificationEntry[]
+  /** `console` : mode test, aucun SMS n'est réellement envoyé. */
+  provider: string
+}
+
+export async function listNotifications(status?: NotificationStatus): Promise<NotificationLog> {
+  const body = (await http.get('/notifications', { params: { status, limit: 100 } })).data
+  return { notifications: body.notifications, provider: body.provider }
 }

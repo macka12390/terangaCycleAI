@@ -149,6 +149,27 @@ def user_from_request() -> User | None:
     return user
 
 
+def update_profile(user: User, data) -> User:
+    """La personne connectée modifie son nom ou coupe ses notifications SMS."""
+    from app.utils.errors import validation_error
+    from app.utils.validation import parse_text
+
+    if user.demo_login:
+        raise ApiError(403, "DEMO_ACCOUNT_LOCKED", "Les comptes de démonstration ne sont pas modifiables.")
+    if "name" in data:
+        name = parse_text(data, "name", max_length=80)
+        if not name:
+            raise validation_error("Le nom est obligatoire.", "name")
+        user.name = name
+    if "sms_notifications" in data:
+        value = data["sms_notifications"]
+        if not isinstance(value, bool):
+            raise validation_error("« sms_notifications » doit valoir true ou false.", "sms_notifications")
+        user.sms_notifications = value
+    db.session.commit()
+    return user
+
+
 def auth_required(*roles: str) -> Callable:
     """Exige un jeton valide (et un des rôles donnés s'il y en a). Pose `g.user`."""
 

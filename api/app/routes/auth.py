@@ -43,3 +43,10 @@ def otp_verify():
 @auth_service.auth_required()
 def me():
     return ok(user=user_to_dict(g.user))
+
+
+@bp.patch("/me")
+@auth_service.auth_required()
+def update_me():
+    """Mon compte : nom et notifications SMS (oui ou non)."""
+    return ok(user=user_to_dict(auth_service.update_profile(g.user, json_body())))

@@ -1,7 +1,19 @@
-import { BarChart3, Building2, ClipboardCheck, LogOut, Map, Recycle, ShieldCheck, Truck, UsersRound } from 'lucide-react'
+import {
+  BarChart3,
+  Building2,
+  CircleUserRound,
+  ClipboardCheck,
+  LogOut,
+  Map,
+  MessageSquareText,
+  Recycle,
+  ShieldCheck,
+  Truck,
+  UsersRound,
+} from 'lucide-react'
 import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet, useNavigate } from 'react-router'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
 import { DemoTag, Loading } from '../../ui/common.tsx'
@@ -17,6 +29,7 @@ const LINKS = [
   { to: PATHS.adminProofs, key: 'proofs', Icon: ClipboardCheck, end: false },
   { to: PATHS.adminMap, key: 'map', Icon: Map, end: false },
   { to: PATHS.adminAccounts, key: 'accounts', Icon: UsersRound, end: false },
+  { to: PATHS.adminNotifications, key: 'notifications', Icon: MessageSquareText, end: false },
   { to: PATHS.adminOrganisations, key: 'organisations', Icon: Building2, end: false, superadminOnly: true },
 ] as const
 
@@ -70,6 +83,10 @@ export function AdminLayout() {
             )}
             {user?.is_demo && <DemoTag />}
           </span>
+          <Link to={PATHS.account} className="ml-auto flex min-h-11 items-center gap-2 rounded-xl px-3 font-semibold text-brand-600">
+            <CircleUserRound aria-hidden="true" className="size-5" />
+            {t('account.link')}
+          </Link>
           <button
             type="button"
             onClick={logout}

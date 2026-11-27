@@ -51,6 +51,8 @@ export interface User {
   /** Admins et collecteurs : leur organisation ; `null` pour un citoyen ou le super admin. */
   organisation?: OrganisationSummary | null
   is_active?: boolean
+  /** SMS de suivi acceptés (étape 4). */
+  sms_notifications?: boolean
   suspended_at?: string | null
   suspended_reason?: string | null
   created_at?: string | null
@@ -195,4 +197,24 @@ export interface DashboardStats {
     agreement_rate: number | null
   }
   demo: { included: boolean; demo_reports: number }
+}
+
+/** Journal des SMS (étape 4). */
+export type NotificationStatus = 'pending' | 'sent' | 'failed' | 'skipped'
+
+export interface NotificationEntry {
+  id: number
+  kind: string
+  kind_label: string
+  recipient: { id: number; name: string } | null
+  recipient_role: Role | null
+  /** Toujours masqué : « +221 77 *** ** 01 ». */
+  phone: string | null
+  message: string
+  status: NotificationStatus
+  detail: string | null
+  attempts: number
+  tracking_number: string | null
+  created_at: string
+  sent_at: string | null
 }

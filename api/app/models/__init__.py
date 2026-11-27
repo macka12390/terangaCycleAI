@@ -3,6 +3,7 @@
 from app.models.audit import AuditLog
 from app.models.event import StatusEvent
 from app.models.mission import Mission
+from app.models.notification import Notification
 from app.models.organisation import Organisation
 from app.models.otp import OtpChallenge
 from app.models.proof import CollectionProof
@@ -13,6 +14,7 @@ __all__ = [
     "AuditLog",
     "CollectionProof",
     "Mission",
+    "Notification",
     "Organisation",
     "OtpChallenge",
     "Report",

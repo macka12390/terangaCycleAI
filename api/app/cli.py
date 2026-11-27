@@ -77,6 +77,14 @@ def register_commands(app: Flask) -> None:
         where = f" ({organisation.name})" if organisation else ""
         click.echo(f"Compte {role}{state} créé pour {mask_phone(normalized)} : « {user.name} »{where}.")
 
+    @app.cli.command("send-notifications")
+    def send_notifications_command():
+        """Envoie les SMS en attente et relance ceux en échec (3 essais au plus)."""
+        from app.services.notifications import dispatch_pending
+
+        result = dispatch_pending(limit=500, retry_failed=True)
+        click.echo(f"SMS envoyés : {result['sent']}, en échec : {result['failed']}.")
+
     @app.cli.command("reset-db")
     @click.confirmation_option(prompt="Effacer TOUTE la base locale et les photos ?")
     def reset_db_command():

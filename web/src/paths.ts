@@ -10,6 +10,8 @@ export const PATHS = {
   citizenTracking: '/citizen/tracking/:id',
   /** Connexion par code SMS (comptes réels). */
   login: '/connexion',
+  /** Mon compte : nom, SMS de suivi, déconnexion. */
+  account: '/mon-compte',
   /** Comptes de démonstration (choix du rôle). */
   demo: '/demo',
   /** Espace collecteur. */
@@ -25,4 +27,6 @@ export const PATHS = {
   adminAccounts: '/admin/accounts',
   /** Organisations et zones (super admin). */
   adminOrganisations: '/admin/organisations',
+  /** Journal des SMS envoyés. */
+  adminNotifications: '/admin/sms',
 } as const

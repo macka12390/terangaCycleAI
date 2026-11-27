@@ -1,6 +1,6 @@
-import { LogOut, Recycle } from 'lucide-react'
+import { CircleUserRound, LogOut, Recycle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useNavigate } from 'react-router'
+import { Link, Outlet, useNavigate } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
 import { DemoTag } from '../../ui/common.tsx'
@@ -21,6 +21,10 @@ export function CollectorLayout() {
             {user?.name}
             {user?.is_demo && <DemoTag />}
           </span>
+          <Link to={PATHS.account} className="ml-auto flex min-h-11 items-center gap-1 font-semibold text-mint">
+            <CircleUserRound aria-hidden="true" className="size-5" />
+            {t('account.link')}
+          </Link>
           <button
             type="button"
             onClick={() => {

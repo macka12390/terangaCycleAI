@@ -36,6 +36,7 @@ def user_to_dict(user: User) -> dict:
         "role_label": ROLES.get(user.role, user.role),
         "organisation": organisation_summary(user.organisation),
         "is_active": user.is_active,
+        "sms_notifications": user.sms_notifications,
         "suspended_at": iso(user.suspended_at),
         "suspended_reason": user.suspended_reason,
         "created_at": iso(user.created_at),
@@ -224,4 +225,26 @@ def event_to_dict(event: StatusEvent) -> dict:
         "actor": event.actor.name if event.actor else None,
         "note": event.note,
         "at": iso(event.created_at),
+    }
+
+
+def notification_to_dict(notification) -> dict:
+    from app.services.notifications import KIND_LABELS
+    from app.utils.phone import mask_phone
+
+    return {
+        "id": notification.id,
+        "kind": notification.kind,
+        "kind_label": KIND_LABELS.get(notification.kind, notification.kind),
+        "recipient": user_summary(notification.user),
+        "recipient_role": notification.user.role if notification.user else None,
+        # Numéro toujours masqué dans la console.
+        "phone": mask_phone(notification.phone) if notification.phone else None,
+        "message": notification.message,
+        "status": notification.status,
+        "detail": notification.detail,
+        "attempts": notification.attempts,
+        "tracking_number": notification.report.tracking_number if notification.report else None,
+        "created_at": iso(notification.created_at),
+        "sent_at": iso(notification.sent_at),
     }

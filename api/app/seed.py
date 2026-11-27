@@ -15,7 +15,7 @@ from werkzeug.datastructures import FileStorage
 
 from app.constants import CATEGORIES, AiMode
 from app.extensions import db
-from app.models import CollectionProof, Mission, Report, StatusEvent, User
+from app.models import CollectionProof, Mission, Notification, Report, StatusEvent, User
 from app.services import missions as mission_service
 from app.services import proofs as proof_service
 from app.services import reports as report_service
@@ -167,6 +167,7 @@ def clear_demo() -> int:
     reports = Report.query.filter_by(is_demo=True).all()
     for report in reports:
         StatusEvent.query.filter_by(report_id=report.id).delete()
+        Notification.query.filter_by(report_id=report.id).delete()
         if report.mission:
             for proof in report.mission.proofs:
                 delete_image(proof.after_photo_path)

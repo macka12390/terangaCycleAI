@@ -26,3 +26,6 @@ export const AdminAccountsPage = lazy(() =>
 export const AdminOrganisationsPage = lazy(() =>
   import('./AdminOrganisationsPage.tsx').then((m) => ({ default: m.AdminOrganisationsPage })),
 )
+export const AdminNotificationsPage = lazy(() =>
+  import('./AdminNotificationsPage.tsx').then((m) => ({ default: m.AdminNotificationsPage })),
+)

@@ -1,4 +1,5 @@
 import {
+  CircleUserRound,
   Camera,
   CheckCircle2,
   ChevronLeft,
@@ -22,6 +23,7 @@ import { ApiError, errorCode } from '../../api/http.ts'
 import type { Ai } from '../../api/types.ts'
 import { enqueue, flush, pendingCount } from '../../offline/outbox.ts'
 import { PATHS } from '../../paths.ts'
+import { getUser } from '../session/session.ts'
 import { PhotoPicker } from '../../ui/PhotoPicker.tsx'
 import { AiPanel } from '../classify/AiPanel.tsx'
 import { WasteTypePicker } from '../classify/WasteTypePicker.tsx'
@@ -351,11 +353,28 @@ function ReportForm() {
             <ChevronLeft aria-hidden="true" className="size-5" />
             {t('citizen.back')}
           </Link>
-          <span className="font-bold">TerangaCycle AI</span>
-          <Link to={PATHS.citizenQr} className="flex min-h-11 items-center gap-1 text-sm font-medium">
-            <QrCode aria-hidden="true" className="size-5" />
-            {t('citizen.qr.link')}
-          </Link>
+          {/* Sur téléphone, la place va aux liens. */}
+          <span className="hidden font-bold sm:inline">TerangaCycle AI</span>
+          <span className="flex items-center gap-3">
+            <Link to={PATHS.citizenQr} className="flex min-h-11 items-center gap-1 text-sm font-medium">
+              <QrCode aria-hidden="true" className="size-5" />
+              {t('citizen.qr.link')}
+            </Link>
+            {getUser() ? (
+              <Link to={PATHS.account} className="flex min-h-11 items-center gap-1 text-sm font-medium">
+                <CircleUserRound aria-hidden="true" className="size-5" />
+                {t('account.link')}
+              </Link>
+            ) : (
+              <Link
+                to={`${PATHS.login}?next=${encodeURIComponent(PATHS.citizenReport)}`}
+                className="flex min-h-11 items-center gap-1 text-sm font-medium"
+              >
+                <CircleUserRound aria-hidden="true" className="size-5" />
+                {t('account.loginForSms')}
+              </Link>
+            )}
+          </span>
         </div>
       </header>
 

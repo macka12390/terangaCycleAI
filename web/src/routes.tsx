@@ -12,6 +12,7 @@ import { HomePage } from './features/home/HomePage.tsx'
 import { NotFoundPage } from './features/not-found/NotFoundPage.tsx'
 import { ReportEntry } from './features/report/ReportEntry.tsx'
 import { DemoLoginPage } from './features/session/DemoLoginPage.tsx'
+import { AccountPage } from './features/session/AccountPage.tsx'
 import { LoginPage } from './features/session/LoginPage.tsx'
 import { RequireRole } from './features/session/RequireRole.tsx'
 import { PATHS } from './paths.ts'
@@ -21,6 +22,7 @@ import {
   AdminLayout,
   AdminMapPage,
   AdminMissionsPage,
+  AdminNotificationsPage,
   AdminOrganisationsPage,
   AdminProofsPage,
   AdminReportsPage,
@@ -45,6 +47,7 @@ export const routes: RouteObject[] = [
       // Ancien parcours en trois écrans : remplacé par le formulaire en un écran.
       { path: '/signaler/*', element: <Navigate to={PATHS.citizenReport} replace /> },
       { path: PATHS.login, element: <LoginPage /> },
+      { path: PATHS.account, element: <AccountPage /> },
       { path: PATHS.demo, element: <DemoLoginPage /> },
       {
         element: (
@@ -74,6 +77,7 @@ export const routes: RouteObject[] = [
           { path: PATHS.adminMap, element: <AdminMapPage /> },
           { path: PATHS.adminAccounts, element: <AdminAccountsPage /> },
           { path: PATHS.adminOrganisations, element: <AdminOrganisationsPage /> },
+          { path: PATHS.adminNotifications, element: <AdminNotificationsPage /> },
         ],
       },
       { path: '*', element: <NotFoundPage /> },

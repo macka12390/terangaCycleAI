@@ -45,6 +45,9 @@ def create_app(config_object: type | None = None, overrides: dict | None = None)
     CORS(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}})
     register_error_handlers(app)
     register_blueprints(app)
+    from app.services.notifications import dispatch_after_request
+
+    app.after_request(dispatch_after_request)
     register_commands(app)
 
     with app.app_context():

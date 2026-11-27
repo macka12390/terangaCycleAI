@@ -347,7 +347,8 @@
       "proofs": "Preuves",
       "map": "Carte",
       "accounts": "Comptes",
-      "organisations": "Organisations"
+      "organisations": "Organisations",
+      "notifications": "SMS"
     },
     "logout": "Quitter",
     "dashboard": {
@@ -544,6 +545,32 @@
         "latOrder": "La latitude minimale doit être inférieure à la maximale.",
         "lngOrder": "La longitude minimale doit être inférieure à la maximale."
       }
+    },
+    "notifications": {
+      "title": "SMS envoyés",
+      "intro": "Les SMS de suivi envoyés aux citoyens et aux collecteurs. Les numéros sont masqués.",
+      "testMode": "Mode test : aucun SMS n'est réellement envoyé. Cette page montre ce qui le serait.",
+      "empty": "Aucun SMS pour l'instant.",
+      "to": "À {{name}} ({{phone}})",
+      "noPhone": "sans numéro",
+      "filters": {
+        "all": "Tous",
+        "sent": "Envoyés",
+        "skipped": "Non envoyés",
+        "failed": "En échec",
+        "pending": "En attente"
+      },
+      "statuses": {
+        "sent": "Envoyé",
+        "skipped": "Non envoyé",
+        "failed": "En échec",
+        "pending": "En attente"
+      },
+      "reasons": {
+        "no_phone": "Non envoyé : compte sans numéro (démo ou signalement anonyme).",
+        "opted_out": "Non envoyé : la personne a coupé ses SMS.",
+        "error": "Le fournisseur de SMS a échoué : nouvel essai avec « flask send-notifications »."
+      }
     }
   },
   "collector": {
@@ -599,5 +626,30 @@
     "wrongCode": "Code incorrect. Essais restants : {{count}}.",
     "testMode": "Mode test : aucun SMS n'est envoyé. Votre code : {{code}}",
     "demo": "Essayer avec un compte de démonstration"
+  },
+  "account": {
+    "link": "Mon compte",
+    "loginForSms": "Suivi par SMS",
+    "title": "Mon compte",
+    "role": "Rôle",
+    "phone": "Téléphone",
+    "organisation": "Organisation",
+    "name": "Nom affiché",
+    "save": "Enregistrer",
+    "nameSaved": "Nom enregistré.",
+    "demo": "Compte de démonstration : rien n'est modifiable ici. Connectez-vous avec votre numéro pour régler vos SMS.",
+    "sms": {
+      "title": "SMS de suivi",
+      "body": {
+        "citizen": "Recevez un SMS quand votre signalement est validé, puis quand le dépôt est collecté.",
+        "collector": "Recevez un SMS pour chaque nouvelle mission de votre organisation et quand vos preuves sont vérifiées.",
+        "admin": "Les administrateurs ne reçoivent pas de SMS de suivi pour l'instant.",
+        "superadmin": "Les super administrateurs ne reçoivent pas de SMS de suivi pour l'instant."
+      },
+      "turnOff": "Couper les SMS",
+      "turnOn": "Recevoir les SMS",
+      "turnedOff": "SMS coupés : vous ne recevrez plus de SMS de suivi.",
+      "turnedOn": "SMS activés."
+    }
   }
 }

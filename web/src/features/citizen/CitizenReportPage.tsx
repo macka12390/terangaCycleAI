@@ -7,7 +7,6 @@ import {
   Loader2,
   MapPin,
   QrCode,
-  Recycle,
   RotateCcw,
   Send,
   Sparkles,
@@ -25,6 +24,7 @@ import { enqueue, flush, pendingCount } from '../../offline/outbox.ts'
 import { PATHS } from '../../paths.ts'
 import { getUser } from '../session/session.ts'
 import { PhotoPicker } from '../../ui/PhotoPicker.tsx'
+import { Logo } from '../../ui/Logo.tsx'
 import { AiPanel } from '../classify/AiPanel.tsx'
 import { WasteTypePicker } from '../classify/WasteTypePicker.tsx'
 import type { WasteType } from '../classify/wasteTypes.ts'
@@ -407,7 +407,7 @@ function ReportForm() {
 
         <div className="overflow-hidden rounded-3xl bg-surface shadow-2xl">
           <div className="bg-gradient-to-r from-brand-900 to-brand-600 px-6 py-8 text-center text-surface">
-            <Recycle aria-hidden="true" className="mx-auto mb-3 size-14 text-accent" />
+            <Logo className="mx-auto mb-3 size-14" />
             <h1 className="mb-1 text-3xl font-bold">{t('citizen.title')}</h1>
             <p className="text-mint">{t('citizen.subtitle')}</p>
           </div>

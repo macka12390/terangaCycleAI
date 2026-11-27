@@ -1,8 +1,9 @@
-import { BarChart3, Camera, CheckCircle2, LogIn, Recycle, ShieldCheck, Truck, Users } from 'lucide-react'
+import { BarChart3, Camera, CheckCircle2, LogIn, ShieldCheck, Truck, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
+import { Logo } from '../../ui/Logo.tsx'
 import { useFocusOnMount } from '../../ui/useFocusOnMount.ts'
 
 // Accueil (cahier des charges §3.1) : valeur du projet, problème, fonctionnement en
@@ -23,9 +24,7 @@ export function HomePage() {
     <div className="flex min-h-dvh flex-col bg-surface">
       <header className="bg-gradient-to-br from-brand-900 to-brand-600 px-4 pt-10 pb-12 text-surface">
         <div className="mx-auto flex max-w-3xl flex-col gap-4">
-          <span className="flex items-center gap-2 text-accent">
-            <Recycle aria-hidden="true" className="size-8" />
-          </span>
+          <Logo className="size-16 rounded-2xl shadow-lg ring-2 ring-surface/20" />
           <h1 ref={titleRef} tabIndex={-1} className="text-4xl font-bold focus:outline-none">
             {t('app.name')}
           </h1>

@@ -8,7 +8,6 @@ import {
   Map,
   MessageSquareText,
   Package,
-  Recycle,
   ShieldCheck,
   Truck,
   UsersRound,
@@ -19,6 +18,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
 import { DemoTag, Loading } from '../../ui/common.tsx'
+import { Logo } from '../../ui/Logo.tsx'
 import { clearSession, getUser } from '../session/session.ts'
 
 // Console administrateur (cahier des charges §8.4) : barre latérale, en-tête avec profil.
@@ -51,7 +51,7 @@ export function AdminLayout() {
     <div className="flex min-h-dvh flex-col bg-surface md:flex-row">
       <aside className="bg-brand-900 text-surface md:w-64 md:shrink-0">
         <div className="flex items-center gap-2 px-4 py-4 text-lg font-bold">
-          <Recycle aria-hidden="true" className="size-6 text-accent" />
+          <Logo className="size-8" />
           TerangaCycle AI
         </div>
         <nav aria-label={t('admin.nav.label')}>

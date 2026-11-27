@@ -1,4 +1,4 @@
-import { Banknote, CircleUserRound, HandCoins, Loader2, LogOut, Recycle, Undo2 } from 'lucide-react'
+import { Banknote, CircleUserRound, HandCoins, Loader2, LogOut, Undo2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
@@ -8,6 +8,7 @@ import { errorCode } from '../../api/http.ts'
 import type { Category } from '../../api/types.ts'
 import { PATHS } from '../../paths.ts'
 import { DemoTag, Empty, ErrorMessage, Loading } from '../../ui/common.tsx'
+import { Logo } from '../../ui/Logo.tsx'
 import { useLoad } from '../../ui/load.ts'
 import { WASTE_TYPES } from '../classify/wasteTypes.ts'
 import { clearSession, getUser } from '../session/session.ts'
@@ -52,7 +53,7 @@ export function RecyclerLotsPage() {
       <header className="bg-brand-900 px-4 py-3 text-surface">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <span className="flex items-center gap-2 font-bold">
-            <Recycle aria-hidden="true" className="size-6 text-accent" />
+            <Logo className="size-8 shrink-0" />
             {user?.name}
             {user?.is_demo && <DemoTag />}
           </span>

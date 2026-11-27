@@ -1,9 +1,10 @@
-import { CircleUserRound, LogOut, Recycle } from 'lucide-react'
+import { CircleUserRound, LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
 import { DemoTag } from '../../ui/common.tsx'
+import { Logo } from '../../ui/Logo.tsx'
 import { clearSession, getUser } from '../session/session.ts'
 
 // Espace collecteur (§8.3), mobile d'abord : en-tête compact avec le nom et la sortie.
@@ -17,7 +18,7 @@ export function CollectorLayout() {
       <header className="bg-brand-900 px-4 py-3 text-surface">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
           <span className="flex items-center gap-2 font-bold">
-            <Recycle aria-hidden="true" className="size-6 text-accent" />
+            <Logo className="size-8 shrink-0" />
             {user?.name}
             {user?.is_demo && <DemoTag />}
           </span>

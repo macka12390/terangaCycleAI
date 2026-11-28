@@ -35,8 +35,8 @@ function ProofCard({ proof, onDone }: { proof: Proof; onDone: () => void }) {
   }
 
   return (
-    <article className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 shadow-sm md:flex-row">
-      <div className="grid grid-cols-2 gap-2 md:w-96 md:shrink-0">
+    <article className="flex flex-col gap-4 rounded-3xl border border-line bg-white p-5 shadow-card transition hover:shadow-lift lg:flex-row">
+      <div className="grid grid-cols-2 gap-2 lg:w-80 lg:shrink-0">
         <figure className="flex flex-col gap-1">
           <img src={proof.report.photo_before_url} alt={t('admin.proofs.before')} className="h-36 w-full rounded-xl object-cover" />
           <figcaption className="text-xs text-muted">{t('admin.proofs.before')}</figcaption>
@@ -106,7 +106,7 @@ export function AdminProofsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold text-brand-900">{t('admin.proofs.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('admin.proofs.title')}</h1>
       <p className="text-sm text-muted">{t('admin.proofs.rule')}</p>
       <div role="tablist" className="flex flex-wrap gap-2">
         {FILTERS.map((status) => (
@@ -116,7 +116,7 @@ export function AdminProofsPage() {
             role="tab"
             aria-selected={filter === status}
             onClick={() => setFilter(status)}
-            className={`min-h-11 rounded-full px-4 font-semibold ${filter === status ? 'bg-brand-600 text-surface' : 'border-2 border-line text-ink'}`}
+            className={`min-h-11 rounded-full px-4 font-semibold ${filter === status ? 'bg-brand-600 text-white shadow-card' : 'border border-line bg-white text-ink hover:border-brand-600'}`}
           >
             {t(`statuses.proof.${status}`)}
           </button>

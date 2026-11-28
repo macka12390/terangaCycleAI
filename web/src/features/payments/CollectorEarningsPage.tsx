@@ -16,7 +16,7 @@ export function CollectorEarningsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold text-brand-900">{t('payments.collector.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('payments.collector.title')}</h1>
       <p className="text-muted">{t('payments.collector.intro')}</p>
       {load.state === 'loading' && <Loading />}
       {load.state === 'error' && <ErrorMessage code={load.code} onRetry={reload} />}

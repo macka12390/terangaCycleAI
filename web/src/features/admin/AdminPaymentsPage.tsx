@@ -25,7 +25,8 @@ import { getUser } from '../session/session.ts'
 // Paiements (étape 6) : tarifs de rémunération par matière, rémunérations à verser aux
 // collecteurs, historique (y compris les lots payés par les recycleurs).
 
-const BUTTON = 'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold disabled:opacity-50'
+const BUTTON =
+  'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold transition disabled:opacity-50'
 
 export function AdminPaymentsPage() {
   const { t } = useTranslation()
@@ -64,14 +65,14 @@ export function AdminPaymentsPage() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold text-brand-900">{t('payments.admin.title')}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('payments.admin.title')}</h1>
         {isSuperadmin && organisations.state === 'ready' && organisations.data && (
           <label className="ml-auto flex items-center gap-2 text-sm font-semibold text-ink">
             {t('admin.dashboard.organisation')}
             <select
               value={organisationId ?? ''}
               onChange={(event) => setChosen(Number(event.target.value))}
-              className="min-h-11 rounded-xl border-2 border-line bg-surface px-3"
+              className="min-h-11 rounded-xl border border-line bg-white px-3 shadow-sm focus:border-brand-600 focus:outline-none"
             >
               {organisations.data.map((organisation) => (
                 <option key={organisation.id} value={organisation.id}>
@@ -84,7 +85,7 @@ export function AdminPaymentsPage() {
       </div>
       <p className="text-muted">{t('payments.admin.intro')}</p>
       {ready && <SimulatedBanner simulated={ready.provider.simulated} />}
-      {notice && <p role="status" className="rounded-xl bg-mint p-3 font-semibold text-brand-900">{notice}</p>}
+      {notice && <p role="status" className="rounded-2xl bg-mint p-4 font-semibold text-brand-900">{notice}</p>}
       {failure && <ErrorMessage code={failure} />}
 
       {ready && (
@@ -101,14 +102,14 @@ export function AdminPaymentsPage() {
 
       <section aria-labelledby="due-title" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 id="due-title" className="text-xl font-bold text-brand-900">{t('payments.admin.due')}</h2>
+          <h2 id="due-title" className="text-xl font-extrabold tracking-tight text-brand-900">{t('payments.admin.due')}</h2>
           <button
             type="button"
             disabled={busy !== null}
             onClick={() =>
               void act('accrue', async () => t('payments.admin.accrued', { count: await accrueRewards(organisationId) }))
             }
-            className={`${BUTTON} ml-auto border-2 border-line text-ink`}
+            className={`${BUTTON} ml-auto border border-line bg-white text-ink hover:border-brand-600`}
           >
             <Calculator aria-hidden="true" className="size-5" />
             {t('payments.admin.accrue')}
@@ -123,7 +124,7 @@ export function AdminPaymentsPage() {
                   return t('payments.admin.paidAll', { count: result.succeeded, amount: formatFcfa(result.amount_fcfa) })
                 })
               }
-              className={`${BUTTON} bg-brand-600 text-surface`}
+              className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}
             >
               {busy === 'all' ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : <Send aria-hidden="true" className="size-5" />}
               {t('payments.admin.payAll', { amount: formatFcfa(sumFcfa(due)) })}
@@ -153,7 +154,7 @@ export function AdminPaymentsPage() {
                             : t('payments.admin.payFailed')
                         })
                       }
-                      className={`${BUTTON} bg-brand-600 text-surface`}
+                      className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}
                     >
                       {busy === payment.id ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : <Send aria-hidden="true" className="size-5" />}
                       {payment.status === 'failed' ? t('payments.admin.retry') : t('payments.admin.pay')}
@@ -166,7 +167,7 @@ export function AdminPaymentsPage() {
       </section>
 
       <section aria-labelledby="history-title" className="flex flex-col gap-3">
-        <h2 id="history-title" className="text-xl font-bold text-brand-900">{t('payments.admin.history')}</h2>
+        <h2 id="history-title" className="text-xl font-extrabold tracking-tight text-brand-900">{t('payments.admin.history')}</h2>
         {ready &&
           (ready.payments.filter((payment) => !isDue(payment)).length === 0 ? (
             <Empty>{t('payments.admin.noHistory')}</Empty>
@@ -208,8 +209,8 @@ function TariffEditor({ organisationId }: { organisationId?: number }) {
   }
 
   return (
-    <section aria-labelledby="tariffs-title" className="flex flex-col gap-3 rounded-2xl border-2 border-line p-4">
-      <h2 id="tariffs-title" className="text-xl font-bold text-brand-900">{t('payments.tariffs.title')}</h2>
+    <section aria-labelledby="tariffs-title" className="flex flex-col gap-3 rounded-3xl border border-line bg-white p-5 shadow-card">
+      <h2 id="tariffs-title" className="text-xl font-extrabold tracking-tight text-brand-900">{t('payments.tariffs.title')}</h2>
       <p className="text-sm text-muted">{t('payments.tariffs.intro')}</p>
       {load.state === 'loading' && <Loading />}
       {load.state === 'error' && <ErrorMessage code={load.code} onRetry={reload} />}
@@ -227,7 +228,7 @@ function TariffEditor({ organisationId }: { organisationId?: number }) {
                   placeholder={current === null ? t('payments.tariffs.none') : String(current)}
                   value={drafts[category] ?? ''}
                   onChange={(event) => setDrafts((d) => ({ ...d, [category]: event.target.value }))}
-                  className="min-h-11 w-28 rounded-xl border-2 border-line bg-surface px-3 text-ink"
+                  className="min-h-11 w-28 rounded-xl border border-line bg-white px-3 text-ink shadow-sm focus:border-brand-600 focus:outline-none"
                 />
                 <span className="text-sm text-muted">{t('payments.tariffs.unit')}</span>
                 <button

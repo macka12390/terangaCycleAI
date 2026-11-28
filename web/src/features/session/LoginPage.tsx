@@ -7,6 +7,7 @@ import { type OtpSent, requestOtp, verifyOtp } from '../../api/endpoints.ts'
 import { ApiError, errorCode } from '../../api/http.ts'
 import { PATHS } from '../../paths.ts'
 import { ErrorMessage } from '../../ui/common.tsx'
+import { Logo } from '../../ui/Logo.tsx'
 import { useFocusOnMount } from '../../ui/useFocusOnMount.ts'
 import { OTP_LENGTH, cleanCode, formatPhone, isSenegalMobile, nextPath } from './login.ts'
 import { saveSession } from './session.ts'
@@ -28,7 +29,7 @@ function toFailure(error: unknown): Failure {
 const INPUT =
   'min-h-12 w-full rounded-xl border-2 border-line bg-surface px-4 text-lg text-ink focus:border-brand-600 focus:outline-none'
 const PRIMARY =
-  'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 font-bold text-surface disabled:opacity-50'
+  'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 font-bold text-white disabled:opacity-50'
 const LINK_BUTTON = 'min-h-11 self-start font-semibold text-brand-600 underline disabled:no-underline disabled:opacity-60'
 
 export function LoginPage() {
@@ -104,7 +105,7 @@ export function LoginPage() {
   const failureView =
     failure &&
     (failure.code === 'OTP_INVALID' && failure.remaining !== undefined ? (
-      <p role="alert" className="rounded-xl border-2 border-danger p-4 text-ink">
+      <p role="alert" className="rounded-2xl border border-danger/40 border-l-4 border-l-danger bg-white p-4 text-ink shadow-card">
         {t('login.wrongCode', { count: failure.remaining })}
       </p>
     ) : (
@@ -112,15 +113,23 @@ export function LoginPage() {
     ))
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-6">
-      <Link to={PATHS.home} className="flex min-h-11 items-center gap-1 font-semibold text-brand-600">
-        <ChevronLeft aria-hidden="true" className="size-5" />
-        {t('citizen.back')}
-      </Link>
-      <h1 ref={titleRef} tabIndex={-1} className="text-2xl font-bold text-brand-900 focus:outline-none">
-        {t('login.title')}
-      </h1>
-      <p className="text-ink">{t('login.intro')}</p>
+    <div className="min-h-dvh bg-surface">
+      <div className="relative overflow-hidden bg-gradient-to-br from-brand-950 to-brand-700 px-4 pt-6 pb-24 text-white">
+        <div aria-hidden="true" className="absolute inset-0 bg-dots" />
+        <div className="relative mx-auto flex max-w-lg flex-col gap-4">
+          <Link to={PATHS.home} className="flex min-h-11 w-fit items-center gap-1 font-semibold text-mint">
+            <ChevronLeft aria-hidden="true" className="size-5" />
+            {t('citizen.back')}
+          </Link>
+          <Logo className="size-14 rounded-2xl shadow-card" />
+          <h1 ref={titleRef} tabIndex={-1} className="text-3xl font-extrabold tracking-tight focus:outline-none">
+            {t('login.title')}
+          </h1>
+          <p className="text-mint">{t('login.intro')}</p>
+        </div>
+      </div>
+      <main className="relative mx-auto -mt-16 flex max-w-lg animate-fade-up flex-col gap-5 px-4 pb-10">
+        <div className="flex flex-col gap-5 rounded-3xl border border-line bg-white p-5 shadow-lift">
 
       {!sent ? (
         <form onSubmit={(event) => void sendCode(event)} className="flex flex-col gap-3" noValidate>
@@ -225,6 +234,8 @@ export function LoginPage() {
         <Users aria-hidden="true" className="size-5" />
         {t('login.demo')}
       </Link>
-    </main>
+        </div>
+      </main>
+    </div>
   )
 }

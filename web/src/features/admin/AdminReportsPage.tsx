@@ -56,7 +56,7 @@ function ReportCard({
   }
 
   return (
-    <article className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 shadow-sm lg:flex-row">
+    <article className="flex flex-col gap-4 rounded-3xl border border-line bg-white p-5 shadow-card transition hover:shadow-lift lg:flex-row">
       <img
         src={report.photo_url}
         alt={t('admin.reports.photoAlt', { number: report.tracking_number })}
@@ -247,7 +247,7 @@ export function AdminReportsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold text-brand-900">{t('admin.reports.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('admin.reports.title')}</h1>
       <div role="tablist" className="flex flex-wrap gap-2">
         {FILTERS.map((status) => (
           <button
@@ -257,7 +257,7 @@ export function AdminReportsPage() {
             aria-selected={filter === status}
             onClick={() => setFilter(status)}
             className={`min-h-11 rounded-full px-4 font-semibold ${
-              filter === status ? 'bg-brand-600 text-surface' : 'border-2 border-line text-ink'
+              filter === status ? 'bg-brand-600 text-white shadow-card' : 'border border-line bg-white text-ink hover:border-brand-600'
             }`}
           >
             {t(`statuses.report.${status}`)}

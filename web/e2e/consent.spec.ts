@@ -158,7 +158,7 @@ async function openHome(page: Page): Promise<string> {
 }
 
 function reportButton(page: Page) {
-  return page.getByRole('link', { name: fr.home.report })
+  return page.getByRole('link', { name: fr.home.report, exact: true })
 }
 
 async function expectConsentScreen(page: Page) {

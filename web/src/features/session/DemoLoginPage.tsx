@@ -10,6 +10,7 @@ import { PATHS } from '../../paths.ts'
 import { DemoTag, ErrorMessage, Loading } from '../../ui/common.tsx'
 import { useLoad } from '../../ui/load.ts'
 import { nextPath } from './login.ts'
+import { Logo } from '../../ui/Logo.tsx'
 import { saveSession } from './session.ts'
 
 // Comptes de démonstration (cahier des charges §2) : la liste vient de l'API
@@ -47,16 +48,23 @@ export function DemoLoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-6">
-      <Link to={PATHS.home} className="flex min-h-11 items-center gap-1 font-semibold text-brand-600">
-        <ChevronLeft aria-hidden="true" className="size-5" />
-        {t('citizen.back')}
-      </Link>
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-brand-900">{t('demoLogin.title')}</h1>
-        <DemoTag />
+    <div className="min-h-dvh bg-surface">
+      <div className="relative overflow-hidden bg-gradient-to-br from-brand-950 to-brand-700 px-4 pt-6 pb-24 text-white">
+        <div aria-hidden="true" className="absolute inset-0 bg-dots" />
+        <div className="relative mx-auto flex max-w-lg flex-col gap-4">
+          <Link to={PATHS.home} className="flex min-h-11 w-fit items-center gap-1 font-semibold text-mint">
+            <ChevronLeft aria-hidden="true" className="size-5" />
+            {t('citizen.back')}
+          </Link>
+          <Logo className="size-16 rounded-2xl" />
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-extrabold tracking-tight">{t('demoLogin.title')}</h1>
+            <DemoTag />
+          </div>
+          <p className="text-mint">{t('demoLogin.intro')}</p>
+        </div>
       </div>
-      <p className="text-ink">{t('demoLogin.intro')}</p>
+    <main className="relative mx-auto -mt-16 flex max-w-lg animate-fade-up flex-col gap-5 px-4 pb-10">
       {load.state === 'loading' && <Loading />}
       {load.state === 'error' && <ErrorMessage code={load.code} onRetry={reload} />}
       {load.state === 'ready' && load.data.length === 0 && (
@@ -77,9 +85,9 @@ export function DemoLoginPage() {
                   type="button"
                   onClick={() => void choose(account)}
                   disabled={pending !== null}
-                  className="flex w-full items-center gap-4 rounded-2xl border-2 border-line bg-surface p-4 text-left hover:border-brand-600 disabled:opacity-60"
+                  className="flex w-full items-center gap-4 rounded-3xl border border-line bg-white p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:border-brand-600 hover:shadow-lift disabled:opacity-60"
                 >
-                  <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-mint text-brand-600">
+                  <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-900 text-white">
                     {pending === account.demo_login ? (
                       <Loader2 aria-hidden="true" className="size-7 animate-spin" />
                     ) : (
@@ -104,5 +112,6 @@ export function DemoLoginPage() {
       )}
       {failure && <ErrorMessage code={failure} />}
     </main>
+    </div>
   )
 }

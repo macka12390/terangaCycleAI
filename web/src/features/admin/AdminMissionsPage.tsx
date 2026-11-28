@@ -13,14 +13,14 @@ export function AdminMissionsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold text-brand-900">{t('admin.missions.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('admin.missions.title')}</h1>
       {load.state === 'loading' && <Loading />}
       {load.state === 'error' && <ErrorMessage code={load.code} onRetry={reload} />}
       {load.state === 'ready' &&
         (load.data.length === 0 ? (
           <Empty>{t('admin.missions.empty')}</Empty>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-line">
+          <div className="overflow-x-auto rounded-3xl border border-line bg-white shadow-card">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="bg-mint text-brand-900">
                 <tr>

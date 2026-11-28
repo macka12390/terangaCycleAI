@@ -8,6 +8,7 @@ import { errorCode } from '../../api/http.ts'
 import type { User } from '../../api/types.ts'
 import { PATHS } from '../../paths.ts'
 import { DemoTag, ErrorMessage } from '../../ui/common.tsx'
+import { Logo } from '../../ui/Logo.tsx'
 import { displayPhone } from '../admin/accounts.ts'
 import { HOME } from './login.ts'
 import { clearSession, getToken, getUser, saveSession } from './session.ts'
@@ -52,20 +53,28 @@ export function AccountPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-6">
-      <Link to={HOME[user.role]} className="flex min-h-11 items-center gap-1 font-semibold text-brand-600">
-        <ChevronLeft aria-hidden="true" className="size-5" />
-        {t('citizen.back')}
-      </Link>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold text-brand-900">{t('account.title')}</h1>
-        {user.is_demo && <DemoTag />}
+    <div className="min-h-dvh bg-surface">
+      <div className="relative overflow-hidden bg-gradient-to-br from-brand-950 to-brand-700 px-4 pt-6 pb-24 text-white">
+        <div aria-hidden="true" className="absolute inset-0 bg-dots" />
+        <div className="relative mx-auto flex max-w-lg flex-col gap-4">
+          <Link to={HOME[user.role]} className="flex min-h-11 w-fit items-center gap-1 font-semibold text-mint">
+            <ChevronLeft aria-hidden="true" className="size-5" />
+            {t('citizen.back')}
+          </Link>
+          <Logo className="size-14 rounded-2xl shadow-card" />
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-extrabold tracking-tight">{t('account.title')}</h1>
+            {user.is_demo && <DemoTag />}
+          </div>
+        </div>
       </div>
+      <main className="relative mx-auto -mt-16 flex max-w-lg animate-fade-up flex-col gap-5 px-4 pb-10">
+        <div className="flex flex-col gap-5 rounded-3xl border border-line bg-white p-5 shadow-lift">
 
-      {notice && <p role="status" className="rounded-xl bg-mint p-3 font-semibold text-brand-900">{notice}</p>}
+      {notice && <p role="status" className="rounded-2xl bg-mint p-4 font-semibold text-brand-900">{notice}</p>}
       {failure && <ErrorMessage code={failure} />}
 
-      <dl className="flex flex-col gap-2 rounded-2xl border border-line p-4 text-ink">
+      <dl className="flex flex-col gap-2 rounded-3xl border border-line bg-white p-5 shadow-card text-ink">
         <div className="flex items-center gap-2">
           <dt className="sr-only">{t('account.role')}</dt>
           <dd className="rounded-full bg-mint px-2 py-0.5 text-xs font-bold text-brand-900">
@@ -96,19 +105,19 @@ export function AccountPage() {
                 value={name}
                 maxLength={80}
                 onChange={(event) => setName(event.target.value)}
-                className="min-h-11 flex-1 rounded-xl border-2 border-line bg-surface px-3 text-ink focus:border-brand-600 focus:outline-none"
+                className="min-h-11 flex-1 rounded-xl border border-line bg-white px-3 text-ink shadow-sm focus:border-brand-600 focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={pending || !name.trim() || name.trim() === user.name}
-                className="min-h-11 rounded-xl bg-brand-600 px-4 font-bold text-surface disabled:opacity-50"
+                className="min-h-11 rounded-xl bg-gradient-to-r from-brand-900 to-brand-600 px-4 font-bold text-white shadow-card transition hover:shadow-lift disabled:opacity-50"
               >
                 {t('account.save')}
               </button>
             </div>
           </form>
 
-          <section aria-labelledby="sms-title" className="flex flex-col gap-3 rounded-2xl border-2 border-line p-4">
+          <section aria-labelledby="sms-title" className="flex flex-col gap-3 rounded-3xl border border-line bg-white p-5 shadow-card">
             <h2 id="sms-title" className="flex items-center gap-2 font-bold text-ink">
               {smsOn ? (
                 <BellRing aria-hidden="true" className="size-5 text-brand-600" />
@@ -130,7 +139,7 @@ export function AccountPage() {
                 )
               }
               className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 font-bold disabled:opacity-50 ${
-                smsOn ? 'border-2 border-line text-ink' : 'bg-brand-600 text-surface'
+                smsOn ? 'border-2 border-line text-ink' : 'bg-brand-600 text-white'
               }`}
             >
               {pending && <Loader2 aria-hidden="true" className="size-5 animate-spin" />}
@@ -139,7 +148,7 @@ export function AccountPage() {
           </section>
         </>
       ) : (
-        <p className="rounded-xl border-2 border-dashed border-line p-4 text-muted">{t('account.demo')}</p>
+        <p className="rounded-3xl border-2 border-dashed border-line bg-white/60 p-8 text-center text-muted">{t('account.demo')}</p>
       )}
 
       <button
@@ -153,6 +162,8 @@ export function AccountPage() {
         <LogOut aria-hidden="true" className="size-5" />
         {t('admin.logout')}
       </button>
-    </main>
+        </div>
+      </main>
+    </div>
   )
 }

@@ -14,8 +14,9 @@ import { formatKg, sellable, weightProblem } from './lots.ts'
 // Mes lots (collecteur, étape 5) : stock vérifié par matière, mise en vente d'un lot,
 // suivi des réservations et remise au recycleur.
 
-const FIELD = 'min-h-11 rounded-xl border-2 border-line bg-surface px-3 text-ink focus:border-brand-600 focus:outline-none'
-const BUTTON = 'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold disabled:opacity-50'
+const FIELD = 'min-h-11 rounded-xl border border-line bg-white px-3 shadow-sm focus:border-brand-600 focus:outline-none text-ink focus:border-brand-600 focus:outline-none'
+const BUTTON =
+  'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold transition disabled:opacity-50'
 
 export function CollectorLotsPage() {
   const { t } = useTranslation()
@@ -47,7 +48,7 @@ export function CollectorLotsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold text-brand-900">{t('lots.collector.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('lots.collector.title')}</h1>
       <p className="text-muted">{t('lots.collector.intro')}</p>
 
       <section aria-labelledby="stock-title" className="flex flex-col gap-2">
@@ -79,7 +80,7 @@ export function CollectorLotsPage() {
         />
       )}
 
-      {notice && <p role="status" className="rounded-xl bg-mint p-3 font-semibold text-brand-900">{notice}</p>}
+      {notice && <p role="status" className="rounded-2xl bg-mint p-4 font-semibold text-brand-900">{notice}</p>}
       {failure && <ErrorMessage code={failure} />}
 
       <h2 className="font-bold text-ink">{t('lots.collector.mine')}</h2>
@@ -100,7 +101,7 @@ export function CollectorLotsPage() {
                       type="button"
                       disabled={busy !== null}
                       onClick={() => void act(lot.id, () => cancelLot(lot.id), t('lots.collector.cancelled'))}
-                      className={`${BUTTON} border-2 border-line text-ink`}
+                      className={`${BUTTON} border border-line bg-white text-ink hover:border-brand-600`}
                     >
                       <Trash2 aria-hidden="true" className="size-5" />
                       {t('lots.collector.cancel')}
@@ -111,7 +112,7 @@ export function CollectorLotsPage() {
                         type="button"
                         disabled={busy !== null}
                         onClick={() => void act(lot.id, () => handOverLot(lot.id), t('lots.collector.handedOver'))}
-                        className={`${BUTTON} bg-brand-600 text-surface`}
+                        className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}
                       >
                         {busy === lot.id ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : <CheckCheck aria-hidden="true" className="size-5" />}
                         {t('lots.collector.handOver')}
@@ -120,7 +121,7 @@ export function CollectorLotsPage() {
                         type="button"
                         disabled={busy !== null}
                         onClick={() => void act(lot.id, () => releaseLot(lot.id), t('lots.collector.released'))}
-                        className={`${BUTTON} border-2 border-line text-ink`}
+                        className={`${BUTTON} border border-line bg-white text-ink hover:border-brand-600`}
                       >
                         <Undo2 aria-hidden="true" className="size-5" />
                         {t('lots.collector.release')}
@@ -172,7 +173,7 @@ function SellForm({ stock, onSold }: { stock: Record<Category, number>; onSold: 
   }
 
   return (
-    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3 rounded-2xl border-2 border-brand-600 p-4" noValidate>
+    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3 rounded-3xl border-2 border-brand-600 bg-white p-5 shadow-lift" noValidate>
       <h2 className="flex items-center gap-2 font-bold text-brand-900">
         <PackagePlus aria-hidden="true" className="size-5" />
         {t('lots.collector.sellTitle')}
@@ -205,7 +206,7 @@ function SellForm({ stock, onSold }: { stock: Record<Category, number>; onSold: 
         <p role="alert" className="text-sm font-semibold text-warning-ink">{t('lots.collector.tooMuch', { max: formatKg(available) })}</p>
       )}
       {failure && <ErrorMessage code={failure} />}
-      <button type="submit" disabled={problem !== null || pending} className={`${BUTTON} self-start bg-brand-600 text-surface`}>
+      <button type="submit" disabled={problem !== null || pending} className={`${BUTTON} self-start bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}>
         {pending && <Loader2 aria-hidden="true" className="size-5 animate-spin" />}
         {t('lots.collector.sell')}
       </button>

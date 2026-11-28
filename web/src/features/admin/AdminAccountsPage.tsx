@@ -23,8 +23,9 @@ import { ROLE_ORDER, canManage, displayPhone, roleOptions } from './accounts.ts'
 // Gestion des comptes (étape 2) : créer les comptes collecteurs et admins, vérifier,
 // changer de rôle, suspendre ou réactiver. Le super admin voit aussi le journal d'audit.
 
-const FIELD = 'min-h-11 rounded-xl border-2 border-line bg-surface px-3 text-ink focus:border-brand-600 focus:outline-none'
-const BUTTON = 'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold disabled:opacity-50'
+const FIELD = 'min-h-11 rounded-xl border border-line bg-white px-3 shadow-sm focus:border-brand-600 focus:outline-none text-ink focus:border-brand-600 focus:outline-none'
+const BUTTON =
+  'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold transition disabled:opacity-50'
 
 export function AdminAccountsPage() {
   const { t } = useTranslation()
@@ -62,9 +63,9 @@ export function AdminAccountsPage() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-brand-900">{t('admin.accounts.title')}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('admin.accounts.title')}</h1>
         {!creating && (
-          <button type="button" onClick={() => setCreating(true)} className={`${BUTTON} bg-brand-600 text-surface`}>
+          <button type="button" onClick={() => setCreating(true)} className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}>
             <Plus aria-hidden="true" className="size-5" />
             {t('admin.accounts.create.toggle')}
           </button>
@@ -73,7 +74,7 @@ export function AdminAccountsPage() {
       <p className="text-muted">{t('admin.accounts.intro')}</p>
 
       {notice && (
-        <p role="status" className="rounded-xl bg-mint p-3 font-semibold text-brand-900">
+        <p role="status" className="rounded-2xl bg-mint p-4 font-semibold text-brand-900">
           {notice}
         </p>
       )}
@@ -135,7 +136,7 @@ export function AdminAccountsPage() {
             {t('admin.accounts.filters.search')}
             <input value={search} onChange={(event) => setSearch(event.target.value)} className={FIELD} />
           </label>
-          <button type="submit" aria-label={t('admin.accounts.filters.searchButton')} className={`${BUTTON} border-2 border-brand-600 text-brand-600`}>
+          <button type="submit" aria-label={t('admin.accounts.filters.searchButton')} className={`${BUTTON} border-2 border-brand-600 bg-white text-brand-600 hover:bg-mint`}>
             <Search aria-hidden="true" className="size-5" />
           </button>
         </form>
@@ -192,7 +193,7 @@ function AccountCard({
   const active = account.is_active !== false
 
   return (
-    <li className={`flex flex-col gap-3 rounded-2xl border-2 p-4 ${active ? 'border-line' : 'border-danger/60 bg-danger/5'}`}>
+    <li className={`flex flex-col gap-3 rounded-3xl border bg-white p-5 shadow-card ${active ? 'border-line' : 'border-danger/60 bg-danger/5'}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-lg font-bold text-ink">{account.name}</span>
         {me?.id === account.id && <span className="text-sm text-muted">({t('admin.accounts.list.you')})</span>}
@@ -206,7 +207,7 @@ function AccountCard({
           </span>
         )}
         {!active && (
-          <span className="flex items-center gap-1 rounded-full bg-danger px-2 py-0.5 text-xs font-bold text-surface">
+          <span className="flex items-center gap-1 rounded-full bg-danger px-2 py-0.5 text-xs font-bold text-white">
             <Ban aria-hidden="true" className="size-3" />
             {t('admin.accounts.list.suspended')}
           </span>
@@ -252,7 +253,7 @@ function AccountCard({
                   return t(account.is_verified ? 'admin.accounts.actions.unverified' : 'admin.accounts.actions.verified')
                 })
               }
-              className={`${BUTTON} border-2 border-brand-600 text-brand-600`}
+              className={`${BUTTON} border-2 border-brand-600 bg-white text-brand-600 hover:bg-mint`}
             >
               <BadgeCheck aria-hidden="true" className="size-5" />
               {t(account.is_verified ? 'admin.accounts.actions.unverify' : 'admin.accounts.actions.verify')}
@@ -329,7 +330,7 @@ function AccountCard({
                   return t('admin.accounts.actions.reactivated')
                 })
               }
-              className={`${BUTTON} border-2 border-brand-600 text-brand-600`}
+              className={`${BUTTON} border-2 border-brand-600 bg-white text-brand-600 hover:bg-mint`}
             >
               <RotateCcw aria-hidden="true" className="size-5" />
               {t('admin.accounts.actions.reactivate')}
@@ -362,7 +363,7 @@ function AccountCard({
             <p className="text-sm text-muted">{t('admin.accounts.actions.suspendHint')}</p>
           )}
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={busy} className={`${BUTTON} bg-danger text-surface`}>
+            <button type="submit" disabled={busy} className={`${BUTTON} bg-danger text-white`}>
               <Ban aria-hidden="true" className="size-5" />
               {t('admin.accounts.actions.confirmSuspend')}
             </button>
@@ -424,7 +425,7 @@ function CreateAccountForm({
   }
 
   return (
-    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3 rounded-2xl border-2 border-brand-600 p-4" noValidate>
+    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3 rounded-3xl border-2 border-brand-600 bg-white p-5 shadow-lift" noValidate>
       <h2 className="text-lg font-bold text-brand-900">{t('admin.accounts.create.title')}</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
@@ -477,7 +478,7 @@ function CreateAccountForm({
       </div>
       {failure && <ErrorMessage code={failure} />}
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={!valid || pending} className={`${BUTTON} bg-brand-600 text-surface`}>
+        <button type="submit" disabled={!valid || pending} className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}>
           {pending && <Loader2 aria-hidden="true" className="size-5 animate-spin" />}
           {t('admin.accounts.create.submit')}
         </button>
@@ -505,7 +506,7 @@ function AuditLog({ version }: { version: number }) {
         (load.data.length === 0 ? (
           <Empty>{t('admin.accounts.audit.empty')}</Empty>
         ) : (
-          <ol className="flex flex-col divide-y divide-line rounded-2xl border border-line">
+          <ol className="flex flex-col divide-y divide-line overflow-hidden rounded-3xl border border-line bg-white shadow-card">
             {load.data.map((entry) => (
               <li key={entry.id} className="flex flex-wrap items-baseline gap-x-2 p-3 text-sm">
                 <span className="font-bold text-ink">{entry.action_label}</span>

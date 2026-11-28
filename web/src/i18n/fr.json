@@ -617,6 +617,16 @@
       "sent": "Preuve envoyée : l'administrateur va la vérifier.",
       "rejected": "Votre preuve précédente a été rejetée : {{note}}. Envoyez une nouvelle preuve.",
       "verified": "Collecte vérifiée : les kilos sont comptés dans l'impact."
+    },
+    "map": {
+      "title": "Itinéraire vers le dépôt",
+      "label": "Carte : le dépôt et votre position",
+      "dump": "Dépôt à collecter",
+      "distance": "Vous êtes à {{distance}} du dépôt (à vol d'oiseau).",
+      "arrived": "Vous êtes arrivé au dépôt.",
+      "navigate": "Démarrer la navigation",
+      "tilesFailed": "Le fond de carte n'a pas pu être chargé (réseau). Votre position et le dépôt restent affichés.",
+      "privacy": "Votre position reste sur votre téléphone : elle n'est pas envoyée à TerangaCycle."
     }
   },
   "photoPicker": {

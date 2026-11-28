@@ -1,5 +1,5 @@
-import { CheckCircle2, ChevronLeft, MapPin, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { CheckCircle2, ChevronLeft, X } from 'lucide-react'
+import { Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 
@@ -8,11 +8,12 @@ import { errorCode } from '../../api/http.ts'
 import type { Mission } from '../../api/types.ts'
 import { PATHS } from '../../paths.ts'
 import { ErrorMessage, Loading, StatusBadge } from '../../ui/common.tsx'
-import { formatDate, mapLink, useLoad } from '../../ui/load.ts'
+import { formatDate, useLoad } from '../../ui/load.ts'
 import { PhotoPicker } from '../../ui/PhotoPicker.tsx'
 import { WasteTypeBadge } from '../classify/WasteTypePicker.tsx'
 import { browserCodec, preparePhoto } from '../report/photo.ts'
 import { getUser } from '../session/session.ts'
+import { CollectorMap } from './lazyMap.tsx'
 import { parseWeight } from './missions.ts'
 
 // Détail d'une mission et preuve de collecte (§3.6) : photo après collecte (appareil photo
@@ -132,12 +133,13 @@ export function CollectorMissionPage() {
             <span className="text-sm text-muted">{t('collector.created', { date: formatDate(load.data.created_at) })}</span>
           </div>
           {load.data.report_comment && <p className="text-ink">{load.data.report_comment}</p>}
-          {mapLink(load.data.latitude, load.data.longitude) && (
-            <a href={mapLink(load.data.latitude, load.data.longitude)!} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-2 font-semibold text-brand-600 underline">
-              <MapPin aria-hidden="true" className="size-5" />
-              {t('collector.route')}
-            </a>
-          )}
+          {load.data.latitude !== null &&
+            load.data.longitude !== null &&
+            load.data.status !== 'completed' && (
+              <Suspense fallback={<Loading />}>
+                <CollectorMap lat={load.data.latitude} lng={load.data.longitude} />
+              </Suspense>
+            )}
           {load.data.status === 'completed' ? (
             <p role="status" className="flex items-center gap-2 rounded-xl bg-mint p-4 font-bold text-brand-900">
               <CheckCircle2 aria-hidden="true" className="size-6" />

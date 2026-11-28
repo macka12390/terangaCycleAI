@@ -11,6 +11,10 @@ import {
   PRECACHE_GLOB_PATTERNS,
 } from './pwa.config.ts'
 
+// Développement et prévisualisation : l'API Flask (port 5000) est relayée sous la même
+// origine, sans CORS ; ses photos sont servies sous /api/uploads.
+const API_PROXY = { '/api': 'http://127.0.0.1:5000' }
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
@@ -31,13 +35,9 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ],
-  // Développement : l'API Flask (port 5000) est relayée sous la même origine, sans CORS.
-  server: {
-    proxy: {
-      '/api': 'http://127.0.0.1:5000',
-      '/uploads': 'http://127.0.0.1:5000',
-    },
-  },
+  server: { proxy: API_PROXY },
+  // Prévisualisation de la PWA construite (tests de bout en bout contre l'API réelle).
+  preview: { proxy: API_PROXY },
   test: {
     // Vitest seulement : les parcours Playwright (e2e/*.spec.ts) tournent à part (npm run test:e2e).
     include: ['src/**/*.test.{ts,tsx}'],

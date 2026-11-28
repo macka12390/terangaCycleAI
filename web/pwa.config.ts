@@ -41,7 +41,15 @@ export const PRECACHE_GLOB_PATTERNS = [
   'assets/inter-latin-ext-wght-normal-*.woff2',
 ]
 
-// Pages de la console admin, chargées à la demande (features/admin/lazyPages.tsx) avec
+// Pages de la console admin et carte de mission du collecteur, chargées à la demande (features/admin/lazyPages.tsx) avec
 // leurs bibliothèques lourdes (graphiques, carte) : téléchargées en ligne sur l'ordinateur
 // de l'administrateur, jamais précachées sur le téléphone du citoyen.
-export const PRECACHE_GLOB_IGNORES = ['assets/Admin*-*.js', 'assets/Admin*-*.css']
+export const PRECACHE_GLOB_IGNORES = [
+  'assets/Admin*-*.js',
+  'assets/Admin*-*.css',
+  'assets/CollectorMap-*.js',
+  'assets/CollectorMap-*.css',
+  // Leaflet, partagé par les deux cartes : chargé avec elles, en ligne.
+  'assets/leaflet-src-*.js',
+  'assets/leaflet-src-*.css',
+]

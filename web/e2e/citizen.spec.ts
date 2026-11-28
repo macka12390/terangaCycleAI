@@ -1,26 +1,12 @@
-// Espace citoyen du MVP 24 h : signalement en un écran (modèle SenAlerte), QR code, suivi.
-// L'API Flask est simulée (contrat docs/mvp-24h/contrat-api.md) ; GPS simulé par Playwright.
+// Espace citoyen : signalement en un écran (modèle SenAlerte), proposition de l'IA avant
+// l'envoi, QR code, suivi, mode hors-ligne. L'API Flask est simulée selon son contrat
+// (docs/api-contract.md) ; la boucle contre l'API réelle est dans live.spec.ts.
 import { readFileSync } from 'node:fs'
 
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page, type Route } from '@playwright/test'
 
-const fr = JSON.parse(readFileSync(new URL('../src/i18n/fr.json', import.meta.url), 'utf8')) as {
-  consent: { accept: string }
-  capture: { trigger: string; preview: { alt: string } }
-  details: { send: string }
-  citizen: {
-    title: string
-    missing: { photo: string }
-    success: { title: string; track: string }
-    ai: { proposal: string; manual: string }
-    qr: { title: string; alt: string }
-    tracking: { title: string }
-    status: { pending: string }
-    offline: { title: string; sendNow: string }
-  }
-  waste: { plastic: string }
-}
+const fr = JSON.parse(readFileSync(new URL('../src/i18n/fr.json', import.meta.url), 'utf8'))
 
 const PHOTO = {
   name: 'depot.png',
@@ -31,44 +17,78 @@ const PHOTO = {
   ),
 }
 
+const AI = {
+  mode: 'prototype',
+  category: 'plastic',
+  confidence: 0.82,
+  suggested_category: 'plastic',
+  threshold: 0.6,
+  label: 'Suggestion d’un classificateur IA expérimental (prototype)',
+}
+const MANUAL = {
+  mode: 'manual',
+  category: null,
+  confidence: null,
+  suggested_category: null,
+  label: 'Classification manuelle',
+}
 const REPORT = {
   id: 12,
-  tracking_number: 'TC-2026-000012',
-  photo_url: '/uploads/reports/abc.jpg',
+  tracking_number: 'TC-2026-7KQ4MX',
+  status: 'pending',
+  status_label: 'En attente de modération',
+  photo_url: '/api/uploads/reports/abc.jpg',
   latitude: 14.6708,
   longitude: -17.4381,
+  accuracy_m: 12,
   comment: null,
-  voice_url: null,
-  ai_category: 'plastic',
-  ai_confidence: 0.87,
-  ai_mode: 'model',
-  citizen_category: null,
+  ai: AI,
+  citizen_category: 'plastic',
   final_category: null,
-  status: 'pending',
+  category: 'plastic',
   rejection_reason: null,
+  is_demo: false,
   created_at: '2026-11-26T09:30:00Z',
   updated_at: '2026-11-26T09:30:00Z',
-  is_demo: true,
 }
 
 test.use({ geolocation: { latitude: 14.6708, longitude: -17.4381 }, permissions: ['geolocation'] })
 
-async function openForm(page: Page) {
+async function openForm(page: Page, ai: object = AI) {
   await page.route('**/api/config', (route: Route) =>
-    route.fulfill({ json: { demo_mode: true } }),
+    route.fulfill({ json: { success: true, config: { demo_mode: true } } }),
+  )
+  await page.route('**/api/ai/classify', (route: Route) =>
+    route.fulfill({ json: { success: true, ai } }),
   )
   await page.goto('/citizen/report')
   await page.getByRole('button', { name: fr.consent.accept }).click()
   await expect(page.getByRole('heading', { name: fr.citizen.title })).toBeVisible()
 }
 
-test('signalement en un écran : photo, position, envoi, numéro et proposition IA', async ({
-  page,
-}) => {
+async function addPhoto(page: Page, button: string = fr.photoPicker.camera) {
+  const chooser = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: button }).click()
+  await (await chooser).setFiles(PHOTO)
+  await expect(page.getByRole('img', { name: fr.capture.preview.alt })).toBeVisible()
+}
+
+test('deux boutons photo : appareil photo arrière ou galerie', async ({ page }) => {
+  await openForm(page)
+  await expect(page.getByTestId('camera-input')).toHaveAttribute('capture', 'environment')
+  expect(await page.getByTestId('gallery-input').getAttribute('capture')).toBeNull()
+  await expect(page.getByRole('button', { name: fr.photoPicker.camera })).toBeVisible()
+  await expect(page.getByRole('button', { name: fr.photoPicker.gallery })).toBeVisible()
+})
+
+test('signalement : proposition de l’IA avant l’envoi, puis numéro de suivi', async ({ page }) => {
   let sent = ''
   await page.route('**/api/reports', async (route: Route) => {
     sent = route.request().postDataBuffer()?.toString('utf8') ?? ''
-    await route.fulfill({ status: 201, json: REPORT })
+    await route.fulfill({
+      status: 201,
+      json: { success: true, report: REPORT, ai: AI, duplicate: false },
+    })
   })
   await openForm(page)
 
@@ -76,11 +96,13 @@ test('signalement en un écran : photo, position, envoi, numéro et proposition 
   await expect(send).toBeDisabled()
   await expect(page.getByText(fr.citizen.missing.photo)).toBeVisible()
 
-  const chooser = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: fr.capture.trigger }).click()
-  await (await chooser).setFiles(PHOTO)
-  await expect(page.getByRole('img', { name: fr.capture.preview.alt })).toBeVisible()
-  await page.getByRole('button', { name: fr.waste.plastic }).click()
+  await addPhoto(page, fr.photoPicker.gallery)
+  // L'IA propose (82 %) : catégorie préremplie, libellé « prototype » affiché.
+  await expect(page.getByText(AI.label)).toBeVisible()
+  await expect(page.getByRole('button', { name: fr.waste.plastic })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
 
   await expect(send).toBeEnabled()
   const axe = await new AxeBuilder({ page }).analyze()
@@ -90,30 +112,20 @@ test('signalement en un écran : photo, position, envoi, numéro et proposition 
   await send.click()
 
   await expect(page.getByRole('heading', { name: fr.citizen.success.title })).toBeVisible()
-  await expect(page.getByText('TC-2026-000012')).toBeVisible()
-  await expect(page.getByText(fr.citizen.ai.proposal)).toBeVisible()
-  for (const field of ['client_id', 'latitude', 'longitude', 'citizen_category', 'photo']) {
+  await expect(page.getByText(REPORT.tracking_number)).toBeVisible()
+  for (const field of ['client_uuid', 'latitude', 'longitude', 'accuracy_m', 'citizen_category', 'photo']) {
     expect(sent).toContain(`name="${field}"`)
   }
-  expect(sent).toContain('plastic')
 })
 
-test('sans modèle IA : « classification manuelle » affichée, jamais une fausse prédiction', async ({
-  page,
-}) => {
-  await page.route('**/api/reports', (route: Route) =>
-    route.fulfill({
-      status: 201,
-      json: { ...REPORT, ai_mode: 'manual', ai_category: null, ai_confidence: null },
-    }),
-  )
-  await openForm(page)
-  const chooser = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: fr.capture.trigger }).click()
-  await (await chooser).setFiles(PHOTO)
-  await page.getByRole('button', { name: fr.details.send }).click()
+test('IA absente : rien de présélectionné, jamais de fausse prédiction', async ({ page }) => {
+  await openForm(page, MANUAL)
+  await addPhoto(page)
   await expect(page.getByText(fr.citizen.ai.manual)).toBeVisible()
-  await expect(page.getByText(fr.citizen.ai.proposal)).toHaveCount(0)
+  await expect(page.getByRole('button', { name: fr.waste.plastic })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  )
 })
 
 test('suivi par numéro et QR code généré sur place', async ({ page }) => {
@@ -121,12 +133,28 @@ test('suivi par numéro et QR code généré sur place', async ({ page }) => {
   page.on('request', (request) => {
     if (!request.url().startsWith('http://127.0.0.1')) external.push(request.url())
   })
-  await page.route('**/api/reports/TC-2026-000012', (route: Route) =>
-    route.fulfill({ json: REPORT }),
+  await page.route('**/api/reports/track/TC-2026-7KQ4MX', (route: Route) =>
+    route.fulfill({
+      json: {
+        success: true,
+        tracking: {
+          tracking_number: 'TC-2026-7KQ4MX',
+          status: 'approved',
+          status_label: 'Validé — mission disponible',
+          category: 'plastic',
+          created_at: '2026-11-26T09:30:00Z',
+          updated_at: '2026-11-26T10:00:00Z',
+          history: [
+            { status: 'pending', label: 'En attente de modération', at: '2026-11-26T09:30:00Z' },
+            { status: 'approved', label: 'Validé — mission disponible', at: '2026-11-26T10:00:00Z' },
+          ],
+        },
+      },
+    }),
   )
-  await page.goto('/citizen/tracking/TC-2026-000012')
+  await page.goto('/citizen/tracking/TC-2026-7KQ4MX')
   await expect(page.getByRole('heading', { name: fr.citizen.tracking.title })).toBeVisible()
-  await expect(page.locator('[aria-current="step"]')).toHaveText(fr.citizen.status.pending)
+  await expect(page.locator('[aria-current="step"]')).toContainText('Validé — mission disponible')
 
   await page.goto('/citizen/qr')
   await expect(page.getByRole('heading', { name: fr.citizen.qr.title })).toBeVisible()
@@ -145,23 +173,22 @@ test('sans réseau : gardé sur le téléphone, puis envoyé au retour du résea
       return
     }
     const body = route.request().postDataBuffer()?.toString('utf8') ?? ''
-    clientIds.push(/name="client_id"\s+([0-9a-f-]{36})/.exec(body)?.[1] ?? '')
-    await route.fulfill({ status: 201, json: REPORT })
+    clientIds.push(/name="client_uuid"\s+([0-9a-f-]{36})/.exec(body)?.[1] ?? '')
+    await route.fulfill({
+      status: 201,
+      json: { success: true, report: REPORT, ai: AI, duplicate: false },
+    })
   })
   await openForm(page)
-  const chooser = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: fr.capture.trigger }).click()
-  await (await chooser).setFiles(PHOTO)
+  await addPhoto(page)
   await page.getByRole('button', { name: fr.details.send }).click()
   await expect(page.getByRole('heading', { name: fr.citizen.offline.title })).toBeVisible()
 
-  // Retour au formulaire : le signalement attend ; le réseau revient, on l'envoie.
   await page.goto('/citizen/report')
   await expect(page.getByText("1 signalement en attente d'envoi")).toBeVisible()
   online = true
   await page.getByRole('button', { name: fr.citizen.offline.sendNow }).click()
-  await expect(page.getByText('Envoyé : TC-2026-000012')).toBeVisible()
+  await expect(page.getByText(`Envoyé : ${REPORT.tracking_number}`)).toBeVisible()
   expect(clientIds).toHaveLength(1)
   expect(clientIds[0]).toMatch(/^[0-9a-f-]{36}$/)
 })
-

@@ -102,7 +102,7 @@ export function AdminMapPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold text-brand-900">{t('admin.map.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('admin.map.title')}</h1>
       <ul className="flex flex-wrap gap-3 text-sm text-ink" aria-label={t('admin.map.legend')}>
         {(['pending', 'approved', 'assigned', 'collected', 'completed', 'rejected'] as const).map((status) => (
           <li key={status} className="flex items-center gap-2">

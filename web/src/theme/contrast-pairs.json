@@ -30,5 +30,12 @@
   {"name": "waste-organic/surface (non-text)", "fg": "--color-waste-organic", "bg": "--color-surface", "kind": "non-text"},
   {"name": "waste-organic/mint (non-text)", "fg": "--color-waste-organic", "bg": "--color-mint", "kind": "non-text"},
   {"name": "waste-paper/surface (non-text)", "fg": "--color-waste-paper", "bg": "--color-surface", "kind": "non-text"},
-  {"name": "waste-paper/mint (non-text)", "fg": "--color-waste-paper", "bg": "--color-mint", "kind": "non-text"}
+  {"name": "waste-paper/mint (non-text)", "fg": "--color-waste-paper", "bg": "--color-mint", "kind": "non-text"},
+  {"name": "white/brand-950", "fg": "#FFFFFF", "bg": "--color-brand-950", "kind": "text"},
+  {"name": "mint/brand-950", "fg": "--color-mint", "bg": "--color-brand-950", "kind": "text"},
+  {"name": "white/brand-700", "fg": "#FFFFFF", "bg": "--color-brand-700", "kind": "text"},
+  {"name": "white/brand-600", "fg": "#FFFFFF", "bg": "--color-brand-600", "kind": "text"},
+  {"name": "brand-700/white", "fg": "--color-brand-700", "bg": "#FFFFFF", "kind": "text"},
+  {"name": "brand-400/brand-950 (non-text)", "fg": "--color-brand-400", "bg": "--color-brand-950", "kind": "non-text"},
+  {"name": "accent/brand-950 (non-text)", "fg": "--color-accent", "bg": "--color-brand-950", "kind": "non-text"}
 ]

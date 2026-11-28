@@ -124,7 +124,7 @@ export function CollectorMissionPage() {
       {load.state === 'ready' && (
         <>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold text-brand-900">{t('collector.mission', { id: load.data.tracking_number })}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('collector.mission', { id: load.data.tracking_number })}</h1>
             <StatusBadge kind="mission" status={load.data.status} label={load.data.status_label} />
           </div>
           <img src={load.data.photo_before_url} alt={t('collector.photoAlt', { id: load.data.tracking_number })} className="h-56 w-full rounded-2xl object-cover" />

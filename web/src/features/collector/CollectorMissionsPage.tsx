@@ -37,19 +37,19 @@ function MissionCard({ mission, onAccepted }: { mission: Mission; onAccepted?: (
   }
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
-      <img src={mission.photo_before_url} alt={t('collector.photoAlt', { id: mission.tracking_number })} className="h-44 w-full object-cover" />
-      <div className="flex flex-col gap-3 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {mission.waste_type ? <WasteTypeBadge type={mission.waste_type} /> : <span />}
-          <span className="flex items-center gap-2">
-            {mission.is_demo && <DemoTag />}
-            <StatusBadge kind="mission" status={mission.status} label={mission.status_label} />
-          </span>
+    <article className="overflow-hidden rounded-3xl border border-line bg-white shadow-card transition hover:shadow-lift">
+      <div className="relative">
+        <img src={mission.photo_before_url} alt={t('collector.photoAlt', { id: mission.tracking_number })} className="h-48 w-full object-cover" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-brand-950/70 to-transparent" />
+        <div className="absolute inset-x-3 top-3 flex flex-wrap justify-end gap-2">
+          {mission.is_demo && <DemoTag />}
+          <StatusBadge kind="mission" status={mission.status} label={mission.status_label} />
         </div>
-        <p className="text-sm text-muted">
-          {mission.tracking_number} · {t('collector.created', { date: formatDate(mission.created_at) })}
-        </p>
+        <p className="absolute bottom-3 left-4 font-mono text-sm font-bold text-white">{mission.tracking_number}</p>
+      </div>
+      <div className="flex flex-col gap-3 p-5">
+        {mission.waste_type && <WasteTypeBadge type={mission.waste_type} />}
+        <p className="text-sm text-muted">{t('collector.created', { date: formatDate(mission.created_at) })}</p>
         {mission.report_comment && <p className="text-sm text-ink">{mission.report_comment}</p>}
         {map && (
           <a href={map} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-2 font-semibold text-brand-600 underline">
@@ -63,7 +63,7 @@ function MissionCard({ mission, onAccepted }: { mission: Mission; onAccepted?: (
             type="button"
             onClick={() => void accept()}
             disabled={busy}
-            className="min-h-12 rounded-xl bg-brand-600 text-lg font-bold text-surface disabled:opacity-50"
+            className="min-h-12 rounded-2xl bg-gradient-to-r from-brand-900 to-brand-600 text-lg font-bold text-white shadow-card transition hover:shadow-lift disabled:opacity-50"
           >
             {t('collector.accept')}
           </button>
@@ -87,7 +87,7 @@ export function CollectorMissionsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold text-brand-900">{t('collector.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('collector.title')}</h1>
       {user && !user.is_verified && (
         <p role="alert" className="rounded-xl bg-warning-bg p-3 text-warning-ink">
           {t('collector.notVerified')}
@@ -101,7 +101,7 @@ export function CollectorMissionsPage() {
             role="tab"
             aria-selected={tab === value}
             onClick={() => setTab(value)}
-            className={`min-h-12 rounded-xl font-bold ${tab === value ? 'bg-brand-600 text-surface' : 'border-2 border-line text-ink'}`}
+            className={`min-h-12 rounded-2xl font-bold transition ${tab === value ? 'bg-brand-600 text-white shadow-card' : 'border border-line bg-white text-ink hover:border-brand-600'}`}
           >
             {t(`collector.tabs.${value}`)}
           </button>

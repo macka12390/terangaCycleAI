@@ -10,7 +10,8 @@
     "demoAccess": "Espaces de démonstration",
     "problem": {
       "title": "Le problème",
-      "body": "Les dépôts sauvages sont signalés tard et mal documentés ; les collectes et les quantités réellement valorisées sont difficiles à suivre, et les récupérateurs manquent de visibilité."
+      "body": "Les dépôts sauvages sont signalés tard et mal documentés ; les collectes et les quantités réellement valorisées sont difficiles à suivre, et les récupérateurs manquent de visibilité.",
+      "kicker": "Le constat"
     },
     "how": {
       "title": "Comment ça marche",
@@ -29,10 +30,56 @@
       "measure": {
         "title": "L'impact est mesuré",
         "body": "Seuls les kilogrammes vérifiés comptent."
-      }
+      },
+      "kicker": "Le parcours"
     },
     "promise": "Données hébergées et gouvernées au Sénégal, sans API d'IA étrangère obligatoire.",
-    "login": "Se connecter"
+    "login": "Se connecter",
+    "badge": "Hackathon MakeAfrica 2026 · Dakar",
+    "nav": {
+      "label": "Navigation principale",
+      "qr": "QR code",
+      "demo": "Démo"
+    },
+    "preview": {
+      "pending": "En attente",
+      "ai": "Plastique · proposition de l'IA",
+      "verified": "Collecte vérifiée"
+    },
+    "pillars": {
+      "title": "Nos engagements",
+      "sovereign": {
+        "title": "Souveraine",
+        "body": "IA locale, données hébergées et gouvernées au Sénégal."
+      },
+      "sustainable": {
+        "title": "Durable",
+        "body": "Chaque dépôt devient une matière tracée et valorisée."
+      },
+      "inclusive": {
+        "title": "Inclusive",
+        "body": "Wolof et français, hors-ligne, récupérateurs reconnus."
+      }
+    },
+    "spaces": {
+      "kicker": "Démonstration",
+      "title": "Un espace pour chaque acteur",
+      "open": "Ouvrir",
+      "citizen": {
+        "title": "Citoyen",
+        "body": "Photographiez un dépôt sauvage et suivez son traitement, même sans réseau."
+      },
+      "collector": {
+        "title": "Collecteur",
+        "body": "Trouvez les missions proches, guidez-vous jusqu'au dépôt, prouvez la collecte."
+      },
+      "admin": {
+        "title": "Commune",
+        "body": "Modérez, vérifiez les preuves et pilotez l'impact en kilogrammes vérifiés."
+      }
+    },
+    "footer": "Hackathon MakeAfrica 2026 · Afrique Makers : souveraineté technologique durable et inclusive",
+    "reportNow": "Signaler un dépôt maintenant"
   },
   "consent": {
     "title": "Avant votre premier signalement",
@@ -392,7 +439,8 @@
       "allOrganisations": "Toutes les organisations",
       "handedOverKg": "Remis aux recycleurs",
       "rewardsPaid": "Versé aux collecteurs",
-      "rewardsPaidSimulated": "Versé aux collecteurs (simulé)"
+      "rewardsPaidSimulated": "Versé aux collecteurs (simulé)",
+      "subtitle": "Chiffres calculés en direct depuis la base : seuls les kilos vérifiés comptent."
     },
     "reports": {
       "title": "Modération des signalements",
@@ -586,7 +634,9 @@
         "opted_out": "Non envoyé : la personne a coupé ses SMS.",
         "error": "Le fournisseur de SMS a échoué : nouvel essai avec « flask send-notifications »."
       }
-    }
+    },
+    "console": "Console de la commune",
+    "role": "Administrateur"
   },
   "collector": {
     "title": "Missions",

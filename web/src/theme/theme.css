@@ -7,8 +7,11 @@
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
+  --color-brand-950: #062519;
   --color-brand-900: #0B3D2E;
+  --color-brand-700: #11573C;
   --color-brand-600: #187A50;
+  --color-brand-400: #4FB283;
   --color-accent: #F2B705;
   --color-mint: #EAF3EC;
   --color-ink: #14231C;
@@ -26,4 +29,43 @@
   --color-waste-glass: #0F7C6B;
   --color-waste-organic: #5B7A1E;
   --color-waste-paper: #6D4C9F;
+
+  /* Profondeur et mouvement (refonte visuelle du MVP). */
+  --shadow-card: 0 1px 2px rgb(11 61 46 / 0.06), 0 12px 32px -16px rgb(11 61 46 / 0.22);
+  --shadow-lift: 0 2px 4px rgb(11 61 46 / 0.08), 0 24px 48px -20px rgb(11 61 46 / 0.35);
+  --animate-fade-up: fade-up 0.5s ease-out both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
+
+/* Motif de points discret pour les fonds sombres (en-têtes, héros). */
+@utility bg-dots {
+  background-image: radial-gradient(rgb(255 255 255 / 0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Pas d'animation pour qui préfère réduire les mouvements. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+

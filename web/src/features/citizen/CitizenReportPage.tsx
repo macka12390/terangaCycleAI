@@ -353,8 +353,7 @@ function ReportForm() {
             <ChevronLeft aria-hidden="true" className="size-5" />
             {t('citizen.back')}
           </Link>
-          {/* Sur téléphone, la place va aux liens. */}
-          <span className="hidden font-bold sm:inline">TerangaCycle AI</span>
+          <Logo className="size-10 shrink-0 rounded-xl shadow-card" title="TerangaCycle AI" />
           <span className="flex items-center gap-3">
             <Link to={PATHS.citizenQr} className="flex min-h-11 items-center gap-1 text-sm font-medium">
               <QrCode aria-hidden="true" className="size-5" />
@@ -407,7 +406,7 @@ function ReportForm() {
 
         <div className="overflow-hidden rounded-3xl bg-surface shadow-2xl">
           <div className="bg-gradient-to-r from-brand-900 to-brand-600 px-6 py-8 text-center text-surface">
-            <Logo className="mx-auto mb-3 size-14" />
+            <Logo className="mx-auto mb-4 size-20 rounded-3xl" />
             <h1 className="mb-1 text-3xl font-bold">{t('citizen.title')}</h1>
             <p className="text-mint">{t('citizen.subtitle')}</p>
           </div>

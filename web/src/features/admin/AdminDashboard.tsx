@@ -28,7 +28,7 @@ import {
 
 import { dashboardStats, listOrganisations } from '../../api/endpoints.ts'
 import type { Activity, Category } from '../../api/types.ts'
-import { DemoTag, Empty, ErrorMessage, Loading, StatCard } from '../../ui/common.tsx'
+import { DemoTag, Empty, ErrorMessage, Loading, PageHeader, StatCard } from '../../ui/common.tsx'
 import { formatDate, useLoad } from '../../ui/load.ts'
 import { getUser } from '../session/session.ts'
 
@@ -99,14 +99,20 @@ export function AdminDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold text-brand-900">{t('admin.dashboard.title')}</h1>
-        {stats.demo.included && stats.demo.demo_reports > 0 && <DemoTag />}
-        <span className="ml-auto">{picker}</span>
-      </div>
+      <PageHeader
+        title={
+          <>
+            {t('admin.dashboard.title')}
+            {stats.demo.included && stats.demo.demo_reports > 0 && <DemoTag />}
+          </>
+        }
+        subtitle={t('admin.dashboard.subtitle')}
+      >
+        {picker}
+      </PageHeader>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={t('admin.dashboard.verifiedKg')} value={kg(stats.verified_kg)} icon={<Scale aria-hidden="true" />} />
+        <StatCard tone="strong" label={t('admin.dashboard.verifiedKg')} value={kg(stats.verified_kg)} icon={<Scale aria-hidden="true" />} />
         <StatCard label={t('admin.dashboard.reportsTotal')} value={stats.reports.total} icon={<Inbox aria-hidden="true" />} />
         <StatCard label={t('admin.dashboard.reportsPending')} value={stats.reports.pending} icon={<Clock aria-hidden="true" />} />
         <StatCard label={t('admin.dashboard.reportsValidated')} value={stats.reports.validated} icon={<ShieldCheck aria-hidden="true" />} />
@@ -131,7 +137,7 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border border-line p-4" aria-labelledby="kg-by-category">
+        <section className="rounded-3xl border border-line bg-white p-5 shadow-card" aria-labelledby="kg-by-category">
           <h2 id="kg-by-category" className="mb-3 font-bold text-ink">
             {t('admin.dashboard.kgByCategory')}
           </h2>
@@ -163,7 +169,7 @@ export function AdminDashboard() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-line p-4" aria-labelledby="collections">
+        <section className="rounded-3xl border border-line bg-white p-5 shadow-card" aria-labelledby="collections">
           <h2 id="collections" className="mb-3 font-bold text-ink">
             {t('admin.dashboard.collectionsByDay')}
           </h2>
@@ -185,7 +191,7 @@ export function AdminDashboard() {
         </section>
       </div>
 
-      <section className="flex items-center gap-4 rounded-2xl border border-line p-4" aria-labelledby="ai-quality">
+      <section className="flex items-center gap-4 rounded-3xl border border-line bg-white p-5 shadow-card" aria-labelledby="ai-quality">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-mint text-brand-600">
           <BrainCircuit aria-hidden="true" />
         </span>
@@ -202,7 +208,7 @@ export function AdminDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-line p-4" aria-labelledby="activity">
+      <section className="rounded-3xl border border-line bg-white p-5 shadow-card" aria-labelledby="activity">
         <h2 id="activity" className="mb-3 font-bold text-ink">
           {t('admin.dashboard.activity')}
         </h2>

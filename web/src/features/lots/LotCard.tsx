@@ -11,7 +11,7 @@ import { formatFcfa, formatKg, telLink } from './lots.ts'
 const STATUS_STYLE: Record<Lot['status'], string> = {
   available: 'bg-mint text-brand-900',
   reserved: 'bg-warning-bg text-warning-ink',
-  handed_over: 'bg-brand-600 text-surface',
+  handed_over: 'bg-brand-600 text-white',
   cancelled: 'border border-line text-muted',
 }
 
@@ -37,13 +37,13 @@ function Contact({ name, phone, role }: { name: string; phone?: string | null; r
 export function LotCard({ lot, actions }: { lot: Lot; actions?: ReactNode }) {
   const { t } = useTranslation()
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border-2 border-line bg-surface p-4">
+    <li className="flex flex-col gap-3 rounded-3xl border border-line bg-white p-5 shadow-card">
       <div className="flex flex-wrap items-center gap-2">
         <WasteTypeBadge type={lot.category} />
         <span className="text-xl font-bold text-ink">{formatKg(lot.weight_kg)}</span>
-        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_STYLE[lot.status]}`}>{lot.status_label}</span>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${STATUS_STYLE[lot.status]}`}>{lot.status_label}</span>
         {lot.payment && lot.payment.status === 'succeeded' && (
-          <span className="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-bold text-surface">
+          <span className="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-bold text-white">
             {t(lot.payment.is_simulated ? 'payments.lotPaidSimulated' : 'payments.lotPaid', { amount: formatFcfa(lot.payment.amount_fcfa) })}
           </span>
         )}

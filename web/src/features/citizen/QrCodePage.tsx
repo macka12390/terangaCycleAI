@@ -1,10 +1,11 @@
-import { ChevronLeft, Download, QrCode, Share2, Smartphone } from 'lucide-react'
+import { ChevronLeft, Download, Share2, Smartphone } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PATHS } from '../../paths.ts'
+import { Logo } from '../../ui/Logo.tsx'
 
 // QR code d'accès direct au signalement (modèle SenAlerte). Généré dans le navigateur :
 // aucune adresse envoyée à un service tiers. À afficher pendant la démo ou à imprimer.
@@ -47,7 +48,7 @@ export function QrCodePage() {
     <div className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-brand-600 to-brand-900 p-4">
       <div className="w-full max-w-lg overflow-hidden rounded-3xl bg-surface shadow-2xl">
         <div className="bg-gradient-to-r from-brand-900 to-brand-600 p-8 text-center text-surface">
-          <QrCode aria-hidden="true" className="mx-auto mb-3 size-12 text-accent" />
+          <Logo className="mx-auto mb-4 size-20 rounded-3xl" />
           <h1 className="text-3xl font-bold">{t('citizen.qr.title')}</h1>
           <p className="mt-1 text-mint">{t('citizen.qr.subtitle')}</p>
         </div>

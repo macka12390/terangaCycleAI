@@ -19,7 +19,7 @@ export function AdminLotsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold text-brand-900">{t('lots.admin.title')}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('lots.admin.title')}</h1>
       <p className="text-muted">{t('lots.admin.intro')}</p>
       <div role="tablist" className="flex flex-wrap gap-2">
         {FILTERS.map((value) => (
@@ -30,7 +30,7 @@ export function AdminLotsPage() {
             aria-selected={status === value}
             onClick={() => setStatus(value)}
             className={`min-h-11 rounded-full px-4 font-semibold ${
-              status === value ? 'bg-brand-600 text-surface' : 'border-2 border-line text-ink'
+              status === value ? 'bg-brand-600 text-white' : 'border-2 border-line text-ink'
             }`}
           >
             {t(`lots.statuses.${value || 'all'}`)}

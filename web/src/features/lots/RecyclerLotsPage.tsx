@@ -19,7 +19,8 @@ import { formatFcfa } from './lots.ts'
 // Espace recycleur (étape 5) : lots de matière vérifiée, par matière ; réserver un lot donne
 // le contact du collecteur pour organiser l'enlèvement.
 
-const BUTTON = 'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold disabled:opacity-50'
+const BUTTON =
+  'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold transition disabled:opacity-50'
 
 export function RecyclerLotsPage() {
   const { t } = useTranslation()
@@ -50,14 +51,22 @@ export function RecyclerLotsPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
-      <header className="bg-brand-900 px-4 py-3 text-surface">
-        <div className="mx-auto flex max-w-3xl items-center gap-3">
-          <span className="flex items-center gap-2 font-bold">
-            <Logo className="size-8 shrink-0" />
-            {user?.name}
-            {user?.is_demo && <DemoTag />}
+      <header className="relative overflow-hidden bg-gradient-to-br from-brand-950 to-brand-700 px-4 py-3 text-white shadow-card">
+        <div aria-hidden="true" className="absolute inset-0 bg-dots" />
+        <div className="relative mx-auto flex max-w-3xl items-center gap-2">
+          <span className="flex min-w-0 flex-1 items-center gap-3 font-bold">
+            <Logo className="size-11 shrink-0 rounded-xl shadow-card" />
+            <span className="truncate">{user?.name}</span>
+            {user?.is_demo && (
+              <span className="hidden sm:inline">
+                <DemoTag />
+              </span>
+            )}
           </span>
-          <Link to={PATHS.account} className="ml-auto flex min-h-11 items-center gap-1 font-semibold text-mint">
+          <Link
+            to={PATHS.account}
+            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-xl px-2 font-semibold text-mint transition hover:bg-white/10"
+          >
             <CircleUserRound aria-hidden="true" className="size-5" />
             {/* Sur téléphone : icône seule, libellé gardé pour les lecteurs d'écran. */}
             <span className="sr-only sm:not-sr-only">{t('account.link')}</span>
@@ -68,7 +77,7 @@ export function RecyclerLotsPage() {
               clearSession()
               void navigate(PATHS.home, { replace: true })
             }}
-            className="flex min-h-11 items-center gap-2 font-semibold text-mint"
+            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl px-2 font-semibold text-mint transition hover:bg-white/10"
           >
             <LogOut aria-hidden="true" className="size-5" />
             <span className="sr-only sm:not-sr-only">{t('admin.logout')}</span>
@@ -76,8 +85,8 @@ export function RecyclerLotsPage() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4">
-        <h1 className="text-2xl font-bold text-brand-900">{t('lots.recycler.title')}</h1>
+      <main className="mx-auto flex w-full max-w-3xl flex-1 animate-fade-up flex-col gap-4 p-4 py-6">
+        <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('lots.recycler.title')}</h1>
         <p className="text-muted">{t('lots.recycler.intro')}</p>
 
         <div role="tablist" className="flex flex-wrap gap-2">
@@ -89,7 +98,7 @@ export function RecyclerLotsPage() {
               aria-selected={scope === value}
               onClick={() => setScope(value)}
               className={`min-h-11 rounded-full px-4 font-semibold ${
-                scope === value ? 'bg-brand-600 text-surface' : 'border-2 border-line text-ink'
+                scope === value ? 'bg-brand-600 text-white' : 'border-2 border-line text-ink'
               }`}
             >
               {t(`lots.recycler.tabs.${value}`)}
@@ -100,7 +109,7 @@ export function RecyclerLotsPage() {
             <select
               value={category}
               onChange={(event) => setCategory(event.target.value as Category | '')}
-              className="min-h-11 rounded-xl border-2 border-line bg-surface px-3"
+              className="min-h-11 rounded-xl border border-line bg-white px-3 shadow-sm focus:border-brand-600 focus:outline-none"
             >
               <option value="">{t('lots.allCategories')}</option>
               {WASTE_TYPES.map((type) => (
@@ -112,7 +121,7 @@ export function RecyclerLotsPage() {
           </label>
         </div>
 
-        {notice && <p role="status" className="rounded-xl bg-mint p-3 font-semibold text-brand-900">{notice}</p>}
+        {notice && <p role="status" className="rounded-2xl bg-mint p-4 font-semibold text-brand-900">{notice}</p>}
         {failure && <ErrorMessage code={failure} />}
         {load.state === 'loading' && <Loading />}
         {load.state === 'error' && <ErrorMessage code={load.code} onRetry={reload} />}
@@ -131,7 +140,7 @@ export function RecyclerLotsPage() {
                         type="button"
                         disabled={busy !== null}
                         onClick={() => void act(lot.id, () => reserveLot(lot.id), t('lots.recycler.reserved'))}
-                        className={`${BUTTON} bg-brand-600 text-surface`}
+                        className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}
                       >
                         {busy === lot.id ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : <HandCoins aria-hidden="true" className="size-5" />}
                         {t('lots.recycler.reserve')}
@@ -145,7 +154,7 @@ export function RecyclerLotsPage() {
                           onClick={() =>
                             void act(lot.id, async () => payLot(lot.id), t('payments.recycler.paid', { amount: formatFcfa(lot.total_price) }))
                           }
-                          className={`${BUTTON} bg-brand-600 text-surface`}
+                          className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}
                         >
                           {busy === lot.id ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : <Banknote aria-hidden="true" className="size-5" />}
                           {t('payments.recycler.pay', { amount: formatFcfa(lot.total_price) })}
@@ -156,7 +165,7 @@ export function RecyclerLotsPage() {
                         type="button"
                         disabled={busy !== null}
                         onClick={() => void act(lot.id, () => releaseLot(lot.id), t('lots.recycler.released'))}
-                        className={`${BUTTON} border-2 border-line text-ink`}
+                        className={`${BUTTON} border border-line bg-white text-ink hover:border-brand-600`}
                       >
                         <Undo2 aria-hidden="true" className="size-5" />
                         {t('lots.recycler.release')}

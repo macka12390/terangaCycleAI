@@ -26,7 +26,7 @@ export function AdminNotificationsPage() {
       </h1>
       <p className="text-muted">{t('admin.notifications.intro')}</p>
       {load.state === 'ready' && load.data.provider === 'console' && (
-        <p className="rounded-xl border-2 border-warning-ink bg-warning-bg p-3 font-semibold text-ink">
+        <p className="rounded-2xl border-l-4 border-warning-ink bg-warning-bg p-4 font-semibold text-ink">
           {t('admin.notifications.testMode')}
         </p>
       )}
@@ -39,7 +39,7 @@ export function AdminNotificationsPage() {
             aria-selected={status === value}
             onClick={() => setStatus(value)}
             className={`min-h-11 rounded-full px-4 font-semibold ${
-              status === value ? 'bg-brand-600 text-surface' : 'border-2 border-line text-ink'
+              status === value ? 'bg-brand-600 text-white' : 'border-2 border-line text-ink'
             }`}
           >
             {t(`admin.notifications.filters.${value || 'all'}`)}
@@ -56,10 +56,10 @@ export function AdminNotificationsPage() {
             {load.data.notifications.map((notification) => {
               const reason = skipReason(notification)
               return (
-                <li key={notification.id} className="flex flex-col gap-2 rounded-2xl border border-line p-4">
+                <li key={notification.id} className="flex flex-col gap-2 rounded-3xl border border-line bg-white p-5 shadow-card">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="font-bold text-ink">{notification.kind_label}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_STYLE[notification.status]}`}>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${STATUS_STYLE[notification.status]}`}>
                       {t(`admin.notifications.statuses.${notification.status}`)}
                     </span>
                     {notification.tracking_number && (

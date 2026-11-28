@@ -49,7 +49,7 @@ test('1. le citoyen signale un dépôt et reçoit un numéro de suivi', async ({
 })
 
 test('2. l’admin valide le signalement (mission créée)', async ({ page }) => {
-  await loginAs(page, /Admin/)
+  await loginAs(page, /^Admin Démo/)
   await page.getByRole('link', { name: fr.admin.nav.reports }).click()
   const card = page.locator('article', { hasText: trackingNumber })
   await expect(card).toBeVisible()
@@ -78,7 +78,7 @@ test('4. le collecteur vérifié accepte la mission et envoie sa preuve', async 
 })
 
 test('5. l’admin vérifie la preuve et voit les kilos dans l’impact', async ({ page }) => {
-  await loginAs(page, /Admin/)
+  await loginAs(page, /^Admin Démo/)
   await page.getByRole('link', { name: fr.admin.nav.proofs }).click()
   const card = page.locator('article', { hasText: trackingNumber })
   await expect(card.getByText('23,5 kg')).toBeVisible()

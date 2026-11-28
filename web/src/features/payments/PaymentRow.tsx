@@ -11,11 +11,11 @@ import { STATUS_STYLE } from './payments.ts'
 export function PaymentRow({ payment, action }: { payment: PaymentEntry; action?: ReactNode }) {
   const { t } = useTranslation()
   return (
-    <li className="flex flex-col gap-2 rounded-2xl border border-line p-4">
+    <li className="flex flex-col gap-2 rounded-3xl border border-line bg-white p-5 shadow-card">
       <div className="flex flex-wrap items-center gap-2">
         <Banknote aria-hidden="true" className="size-5 text-brand-600" />
         <span className="text-lg font-bold text-ink">{formatFcfa(payment.amount_fcfa)}</span>
-        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_STYLE[payment.status]}`}>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${STATUS_STYLE[payment.status]}`}>
           {payment.status_label}
         </span>
         {payment.is_simulated && (
@@ -55,7 +55,7 @@ export function SimulatedBanner({ simulated }: { simulated: boolean }) {
   const { t } = useTranslation()
   if (!simulated) return null
   return (
-    <p className="rounded-xl border-2 border-warning-ink bg-warning-bg p-3 font-semibold text-ink">
+    <p className="rounded-2xl border-l-4 border-warning-ink bg-warning-bg p-4 font-semibold text-ink">
       {t('payments.simulatedBanner')}
     </p>
   )

@@ -23,8 +23,9 @@ import {
 // Un dépôt va à l'organisation active la plus précise ; hors de toute zone, il attend
 // d'être rattaché depuis la modération.
 
-const FIELD = 'min-h-11 rounded-xl border-2 border-line bg-surface px-3 text-ink focus:border-brand-600 focus:outline-none'
-const BUTTON = 'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold disabled:opacity-50'
+const FIELD = 'min-h-11 rounded-xl border border-line bg-white px-3 shadow-sm focus:border-brand-600 focus:outline-none text-ink focus:border-brand-600 focus:outline-none'
+const BUTTON =
+  'flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 font-bold transition disabled:opacity-50'
 
 export function AdminOrganisationsPage() {
   const { t } = useTranslation()
@@ -48,20 +49,20 @@ export function AdminOrganisationsPage() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-brand-900">{t('admin.organisations.title')}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{t('admin.organisations.title')}</h1>
         {!creating && (
-          <button type="button" onClick={() => setCreating(true)} className={`${BUTTON} bg-brand-600 text-surface`}>
+          <button type="button" onClick={() => setCreating(true)} className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}>
             <Plus aria-hidden="true" className="size-5" />
             {t('admin.organisations.create')}
           </button>
         )}
       </div>
       <p className="text-muted">{t('admin.organisations.intro')}</p>
-      {notice && <p role="status" className="rounded-xl bg-mint p-3 font-semibold text-brand-900">{notice}</p>}
+      {notice && <p role="status" className="rounded-2xl bg-mint p-4 font-semibold text-brand-900">{notice}</p>}
       {failure && <ErrorMessage code={failure} />}
 
       {load.state === 'ready' && (load.data.unassignedReports ?? 0) > 0 && (
-        <p className="rounded-xl border-2 border-warning-ink bg-warning-bg p-3 text-ink">
+        <p className="rounded-2xl border-l-4 border-warning-ink bg-warning-bg p-4 text-ink">
           {t('admin.organisations.unassigned', { count: load.data.unassignedReports ?? 0 })}{' '}
           <Link to={PATHS.adminReports} className="font-bold text-brand-600 underline">
             {t('admin.organisations.unassignedLink')}
@@ -129,13 +130,13 @@ function OrganisationCard({
   const counts = organisation.counts
 
   return (
-    <li className={`flex flex-col gap-3 rounded-2xl border-2 p-4 ${organisation.is_active ? 'border-line' : 'border-dashed border-line opacity-70'}`}>
+    <li className={`flex flex-col gap-3 rounded-3xl border bg-white p-5 shadow-card ${organisation.is_active ? 'border-line' : 'border-dashed border-line opacity-70'}`}>
       <div className="flex flex-wrap items-center gap-2">
         <Building2 aria-hidden="true" className="size-5 text-brand-600" />
         <span className="text-lg font-bold text-ink">{organisation.name}</span>
         <span className="rounded-full bg-mint px-2 py-0.5 text-xs font-bold text-brand-900">{organisation.kind_label}</span>
         {!organisation.is_active && (
-          <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-surface">{t('admin.organisations.inactive')}</span>
+          <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">{t('admin.organisations.inactive')}</span>
         )}
         {organisation.is_demo && <DemoTag />}
       </div>
@@ -153,15 +154,15 @@ function OrganisationCard({
         })}
       </p>
       <div className="flex flex-wrap gap-2">
-        <a href={zoneMapLink(organisation.zone)} target="_blank" rel="noreferrer" className={`${BUTTON} border-2 border-line text-brand-600`}>
+        <a href={zoneMapLink(organisation.zone)} target="_blank" rel="noreferrer" className={`${BUTTON} border border-line bg-white text-brand-600 hover:border-brand-600`}>
           <MapPinned aria-hidden="true" className="size-5" />
           {t('admin.organisations.viewZone')}
         </a>
-        <button type="button" onClick={onEdit} className={`${BUTTON} border-2 border-brand-600 text-brand-600`}>
+        <button type="button" onClick={onEdit} className={`${BUTTON} border-2 border-brand-600 bg-white text-brand-600 hover:bg-mint`}>
           <Pencil aria-hidden="true" className="size-5" />
           {t('admin.organisations.edit')}
         </button>
-        <button type="button" onClick={onToggle} className={`${BUTTON} border-2 border-line text-ink`}>
+        <button type="button" onClick={onToggle} className={`${BUTTON} border border-line bg-white text-ink hover:border-brand-600`}>
           <Power aria-hidden="true" className="size-5" />
           {t(organisation.is_active ? 'admin.organisations.deactivate' : 'admin.organisations.activate')}
         </button>
@@ -217,7 +218,7 @@ function OrganisationForm({
   )
 
   return (
-    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3 rounded-2xl border-2 border-brand-600 p-4" noValidate>
+    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3 rounded-3xl border-2 border-brand-600 bg-white p-5 shadow-lift" noValidate>
       <h2 className="text-lg font-bold text-brand-900">
         {organisation ? t('admin.organisations.editTitle') : t('admin.organisations.createTitle')}
       </h2>
@@ -245,7 +246,7 @@ function OrganisationForm({
       {problem && <p role="alert" className="text-sm font-semibold text-warning-ink">{t(`admin.organisations.problems.${problem}`)}</p>}
       {failure && <ErrorMessage code={failure} />}
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={!valid || pending} className={`${BUTTON} bg-brand-600 text-surface`}>
+        <button type="submit" disabled={!valid || pending} className={`${BUTTON} bg-gradient-to-r from-brand-900 to-brand-600 text-white shadow-card hover:shadow-lift`}>
           {pending && <Loader2 aria-hidden="true" className="size-5 animate-spin" />}
           {t('admin.organisations.save')}
         </button>
